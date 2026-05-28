@@ -1,0 +1,65 @@
+openapi: '3.1.0'
+info:
+  title: TransportKitIntegrationService
+  version: 1.0.0
+servers:
+  - url: https://example.com/api
+paths:
+  /greet:
+    get:
+      operationId: getGreeting
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Greeting response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Greeting'
+  /dashboard:
+    get:
+      operationId: getDashboard
+      responses:
+        '200':
+          description: Dashboard response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '400':
+          description: Error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+components:
+  schemas:
+    Greeting:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    Dashboard:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: string
+      required:
+        - items
+    ErrorBody:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+

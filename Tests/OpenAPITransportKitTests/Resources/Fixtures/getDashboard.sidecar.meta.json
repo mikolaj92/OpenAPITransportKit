@@ -1,0 +1,9 @@
+{
+  "status": 202,
+  "reasonPhrase": "Accepted",
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Fixture": "bundle"
+  }
+}
+
