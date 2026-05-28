@@ -16,62 +16,119 @@ public struct ClosureTransportSelector: TransportSelector {
     }
 }
 
-public struct TransportIdentifier: RawRepresentable, Hashable, Sendable, ExpressibleByStringLiteral {
-    public let rawValue: String
+public enum TransportSource: Hashable, Sendable {
+    case live
+    case fixtures
+    case replay
+    case dynamic
+    case stateful
+}
 
-    public init(rawValue: String) {
-        self.rawValue = rawValue
+public protocol TransportSourceProvider: Sendable {
+    func source(for context: TransportRequestContext) async throws -> TransportSource
+}
+
+public struct ClosureTransportSourceProvider: TransportSourceProvider {
+    private let source: @Sendable (TransportRequestContext) async throws -> TransportSource
+
+    public init(_ source: @escaping @Sendable (TransportRequestContext) async throws -> TransportSource) {
+        self.source = source
     }
 
-    public init(stringLiteral value: String) {
-        self.rawValue = value
+    public func source(for context: TransportRequestContext) async throws -> TransportSource {
+        try await source(context)
     }
 }
 
-public protocol TransportIdentifierProvider: Sendable {
-    func identifier(for context: TransportRequestContext) async throws -> TransportIdentifier
-}
+public struct StaticTransportSourceProvider: TransportSourceProvider {
+    public var source: TransportSource
 
-public struct ClosureTransportIdentifierProvider: TransportIdentifierProvider {
-    private let identify: @Sendable (TransportRequestContext) async throws -> TransportIdentifier
-
-    public init(_ identify: @escaping @Sendable (TransportRequestContext) async throws -> TransportIdentifier) {
-        self.identify = identify
+    public init(_ source: TransportSource) {
+        self.source = source
     }
 
-    public func identifier(for context: TransportRequestContext) async throws -> TransportIdentifier {
-        try await identify(context)
+    public func source(for context: TransportRequestContext) async throws -> TransportSource {
+        source
     }
 }
 
-public struct RoutingTransportSelector<IdentifierProvider: TransportIdentifierProvider>: TransportSelector {
-    public var identifierProvider: IdentifierProvider
-    public var routes: [TransportIdentifier: any ClientTransport]
-    public var defaultTransport: (any ClientTransport)?
+public struct TransportSourceRegistry: Sendable {
+    public var live: (any ClientTransport)?
+    public var fixtures: (any ClientTransport)?
+    public var replay: (any ClientTransport)?
+    public var dynamic: (any ClientTransport)?
+    public var stateful: (any ClientTransport)?
+    public var fallback: (any ClientTransport)?
 
     public init(
-        identifierProvider: IdentifierProvider,
-        routes: [TransportIdentifier: any ClientTransport],
-        defaultTransport: (any ClientTransport)? = nil
+        live: (any ClientTransport)? = nil,
+        fixtures: (any ClientTransport)? = nil,
+        replay: (any ClientTransport)? = nil,
+        dynamic: (any ClientTransport)? = nil,
+        stateful: (any ClientTransport)? = nil,
+        fallback: (any ClientTransport)? = nil
     ) {
-        self.identifierProvider = identifierProvider
-        self.routes = routes
-        self.defaultTransport = defaultTransport
+        self.live = live
+        self.fixtures = fixtures
+        self.replay = replay
+        self.dynamic = dynamic
+        self.stateful = stateful
+        self.fallback = fallback
+    }
+
+    public mutating func setTransport(_ transport: any ClientTransport, for source: TransportSource) {
+        switch source {
+        case .live:
+            live = transport
+        case .fixtures:
+            fixtures = transport
+        case .replay:
+            replay = transport
+        case .dynamic:
+            dynamic = transport
+        case .stateful:
+            stateful = transport
+        }
+    }
+
+    public func transport(for source: TransportSource) -> (any ClientTransport)? {
+        let selectedTransport = switch source {
+        case .live:
+            live
+        case .fixtures:
+            fixtures
+        case .replay:
+            replay
+        case .dynamic:
+            dynamic
+        case .stateful:
+            stateful
+        }
+        return selectedTransport ?? fallback
+    }
+}
+
+public struct SourceSwitchingTransportSelector<SourceProvider: TransportSourceProvider>: TransportSelector {
+    public var sourceProvider: SourceProvider
+    public var registry: TransportSourceRegistry
+
+    public init(
+        sourceProvider: SourceProvider,
+        registry: TransportSourceRegistry
+    ) {
+        self.sourceProvider = sourceProvider
+        self.registry = registry
     }
 
     public func transport(for context: TransportRequestContext) async throws -> any ClientTransport {
-        let identifier = try await identifierProvider.identifier(for: context)
-        if let transport = routes[identifier] {
-            return transport
+        let source = try await sourceProvider.source(for: context)
+        guard let transport = registry.transport(for: source) else {
+            throw TransportSelectionError.missingTransport(source)
         }
-        if let defaultTransport {
-            return defaultTransport
-        }
-        throw TransportRoutingError.missingRoute(identifier)
+        return transport
     }
 }
 
-public enum TransportRoutingError: Error, Equatable, Sendable {
-    case missingRoute(TransportIdentifier)
+public enum TransportSelectionError: Error, Equatable, Sendable {
+    case missingTransport(TransportSource)
 }
-

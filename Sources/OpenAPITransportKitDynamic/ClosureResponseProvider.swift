@@ -14,3 +14,8 @@ public struct ClosureResponseProvider: ResponseProvider {
 
 public typealias DynamicTransport = ProviderTransport<ClosureResponseProvider>
 
+public extension ProviderTransport where Provider == ClosureResponseProvider {
+    init(_ respond: @escaping @Sendable (TransportRequestContext) async throws -> TransportResponse) {
+        self.init(provider: ClosureResponseProvider(respond))
+    }
+}

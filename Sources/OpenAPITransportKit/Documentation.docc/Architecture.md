@@ -10,11 +10,10 @@ Generated Client
   -> any ClientTransport
        -> MultiplexingTransport
             -> live: any ClientTransport
-            -> fixtures: ProviderTransport(FixtureResponseProvider)
-            -> replay: ProviderTransport(ReplayResponseProvider)
-            -> dynamic: ProviderTransport(ClosureResponseProvider)
-            -> stateful: ProviderTransport(StatefulResponseProvider)
-            -> custom: any ClientTransport
+            -> fixtures: FixtureTransport
+            -> replay: ReplayTransport
+            -> dynamic: DynamicTransport
+            -> stateful: StatefulTransport
 
 ProviderTransport
   -> ResponseProvider
@@ -50,11 +49,16 @@ That is intentionally the same low-level surface used by generated clients.
 Providers should not know generated DTOs or domain models. They operate on
 ``TransportRequestContext`` and return ``TransportResponse``.
 
-## Routing Layer
+## Source Selection Layer
 
 ``MultiplexingTransport`` delegates to another transport selected per request.
 This supports app-level mode switching without putting app concerns into the
 library.
+
+Built-in sources use ``TransportSource`` values such as `.live`, `.fixtures`,
+`.replay`, `.dynamic`, and `.stateful`. ``TransportSourceRegistry`` exposes named
+slots for those sources instead of a string-keyed public dictionary. Custom
+selection belongs in a user-provided ``TransportSelector``.
 
 ## Middleware Layer
 
@@ -77,4 +81,3 @@ behavior. OpenAPITransportKit stays in-process and multiplatform.
 
 `URLProtocol` is Apple-platform-specific and URL-based. This package targets
 Swift Multiplatform and uses `operationID` as the stable lookup key.
-

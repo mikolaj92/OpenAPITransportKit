@@ -54,3 +54,37 @@ public struct FixtureResponseProvider: ResponseProvider {
         return fields
     }
 }
+
+public typealias FixtureTransport = ProviderTransport<FixtureResponseProvider>
+
+public extension ProviderTransport where Provider == FixtureResponseProvider {
+    init(
+        loader: any FixtureLoader,
+        scenario: FixtureScenario = .success,
+        resolver: any FixtureResolver = DotSeparatedFixtureResolver(),
+        defaults: FixtureResponseDefaults = .jsonOK
+    ) {
+        self.init(
+            loader: loader,
+            scenarioProvider: StaticScenarioProvider(scenario),
+            resolver: resolver,
+            defaults: defaults
+        )
+    }
+
+    init(
+        loader: any FixtureLoader,
+        scenarioProvider: any ScenarioProvider,
+        resolver: any FixtureResolver = DotSeparatedFixtureResolver(),
+        defaults: FixtureResponseDefaults = .jsonOK
+    ) {
+        self.init(
+            provider: FixtureResponseProvider(
+                loader: loader,
+                scenarioProvider: scenarioProvider,
+                resolver: resolver,
+                defaults: defaults
+            )
+        )
+    }
+}

@@ -6,14 +6,17 @@ import OpenAPITransportKitDynamic
 import OpenAPITransportKitFixtures
 import OpenAPITransportKitReplay
 import OpenAPITransportKitStateful
-import XCTest
+import Testing
 
-final class TransportKitTests: XCTestCase {
+@Suite
+struct TransportKitTests {
+
+    @Test
     func testProviderTransportPassesOperationContextToProvider() async throws {
         let transport = ProviderTransport(
             provider: ClosureResponseProvider { context in
-                XCTAssertEqual(context.operationID, "getDashboard")
-                XCTAssertEqual(context.request.path, "/dashboard")
+                #expect(context.operationID == "getDashboard")
+                #expect(context.request.path == "/dashboard")
                 return TransportResponse(status: .created, body: HTTPBody("created"))
             }
         )
@@ -25,20 +28,20 @@ final class TransportKitTests: XCTestCase {
             operationID: "getDashboard"
         )
 
-        XCTAssertEqual(response.status, .created)
-        let bodyText = try await String(collecting: XCTUnwrap(body), upTo: 1024)
-        XCTAssertEqual(bodyText, "created")
+        #expect(response.status == .created)
+        let bodyText = try await String(collecting: #require(body), upTo: 1024)
+        #expect(bodyText == "created")
     }
 
+    @Test
     func testFixtureProviderLoadsFixtureByOperationIDAndScenario() async throws {
         let loader = MemoryFixtureLoader(fixtures: [
             "getDashboard.empty.json": FixturePayload(string: #"{"items":[]}"#)
         ])
-        let provider = FixtureResponseProvider(
+        let transport = FixtureTransport(
             loader: loader,
-            scenarioProvider: StaticScenarioProvider(.empty)
+            scenario: .empty
         )
-        let transport = ProviderTransport(provider: provider)
 
         let (response, body) = try await transport.send(
             dashboardRequest(),
@@ -47,12 +50,13 @@ final class TransportKitTests: XCTestCase {
             operationID: "getDashboard"
         )
 
-        XCTAssertEqual(response.status, .ok)
-        XCTAssertEqual(response.headerFields[.contentType], "application/json")
-        let bodyText = try await String(collecting: XCTUnwrap(body), upTo: 1024)
-        XCTAssertEqual(bodyText, #"{"items":[]}"#)
+        #expect(response.status == .ok)
+        #expect(response.headerFields[.contentType] == "application/json")
+        let bodyText = try await String(collecting: #require(body), upTo: 1024)
+        #expect(bodyText == #"{"items":[]}"#)
     }
 
+    @Test
     func testFixtureMetadataOverridesDefaultStatus() async throws {
         let loader = MemoryFixtureLoader(fixtures: [
             "getDashboard.error.json": FixturePayload(
@@ -74,10 +78,11 @@ final class TransportKitTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(output.response.status, .badRequest)
-        XCTAssertEqual(output.response.headerFields[.contentType], "application/json")
+        #expect(output.response.status == .badRequest)
+        #expect(output.response.headerFields[.contentType] == "application/json")
     }
 
+    @Test
     func testFixtureMetadataHeadersMergeWithDefaults() async throws {
         var metadataFields = HTTPFields()
         metadataFields[HTTPField.Name("X-Fixture")!] = "partial"
@@ -101,11 +106,12 @@ final class TransportKitTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(output.response.status, .ok)
-        XCTAssertEqual(output.response.headerFields[.contentType], "application/json")
-        XCTAssertEqual(output.response.headerFields[HTTPField.Name("X-Fixture")!], "partial")
+        #expect(output.response.status == .ok)
+        #expect(output.response.headerFields[.contentType] == "application/json")
+        #expect(output.response.headerFields[HTTPField.Name("X-Fixture")!] == "partial")
     }
 
+    @Test
     func testFixtureMetadataDocumentPreservesRepeatedHeaders() throws {
         let setCookie = HTTPField.Name("Set-Cookie")!
         var fields = HTTPFields()
@@ -116,16 +122,17 @@ final class TransportKitTests: XCTestCase {
             metadata: FixtureResponseMetadata(headerFields: fields)
         )
         let metadata = try document.metadata()
-        let roundTripFields = try XCTUnwrap(metadata.headerFields)
+        let roundTripFields = try #require(metadata.headerFields)
 
-        XCTAssertNil(document.headers)
-        XCTAssertEqual(document.headerFields, [
+        #expect(document.headers == nil)
+        #expect(document.headerFields == [
             FixtureHeaderFieldDocument(name: "Set-Cookie", value: "a=1"),
             FixtureHeaderFieldDocument(name: "Set-Cookie", value: "b=2"),
         ])
-        XCTAssertEqual(roundTripFields[values: setCookie], ["a=1", "b=2"])
+        #expect(roundTripFields[values: setCookie] == ["a=1", "b=2"])
     }
 
+    @Test
     func testFileSystemFixtureLoaderReadsMetadataSidecar() async throws {
         let directory = temporaryDirectory()
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -158,13 +165,14 @@ final class TransportKitTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(output.response.status, .accepted)
-        XCTAssertEqual(output.response.headerFields[.contentType], "application/json")
-        XCTAssertEqual(output.response.headerFields[HTTPField.Name("X-Fixture")!], "file")
-        let bodyText = try await String(collecting: XCTUnwrap(output.body), upTo: 1024)
-        XCTAssertEqual(bodyText, #"{"items":["file"]}"#)
+        #expect(output.response.status == .accepted)
+        #expect(output.response.headerFields[.contentType] == "application/json")
+        #expect(output.response.headerFields[HTTPField.Name("X-Fixture")!] == "file")
+        let bodyText = try await String(collecting: #require(output.body), upTo: 1024)
+        #expect(bodyText == #"{"items":["file"]}"#)
     }
 
+    @Test
     func testBundleFixtureLoaderReadsProcessedResourceAndMetadataSidecar() async throws {
         let provider = FixtureResponseProvider(
             loader: BundleFixtureLoader(
@@ -184,45 +192,46 @@ final class TransportKitTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(output.response.status, .accepted)
-        XCTAssertEqual(output.response.headerFields[.contentType], "application/json")
-        XCTAssertEqual(output.response.headerFields[HTTPField.Name("X-Fixture")!], "bundle")
-        let bodyText = try await String(collecting: XCTUnwrap(output.body), upTo: 1024)
-        XCTAssertEqual(bodyText.trimmingCharacters(in: .whitespacesAndNewlines), #"{"items":["resource"]}"#)
+        #expect(output.response.status == .accepted)
+        #expect(output.response.headerFields[.contentType] == "application/json")
+        #expect(output.response.headerFields[HTTPField.Name("X-Fixture")!] == "bundle")
+        let bodyText = try await String(collecting: #require(output.body), upTo: 1024)
+        #expect(bodyText.trimmingCharacters(in: .whitespacesAndNewlines) == #"{"items":["resource"]}"#)
     }
 
+    @Test
     func testBundleFixtureLoaderRequiresExplicitRootFallback() async throws {
         let loader = BundleFixtureLoader(bundle: .module, subdirectory: "Missing")
 
         do {
             _ = try await loader.load(FixtureReference(rawValue: "getDashboard.sidecar.json"))
-            XCTFail("Expected missing fixture error.")
+            Issue.record("Expected missing fixture error.")
         } catch FixtureError.missingFixture(let reference) {
-            XCTAssertEqual(reference.rawValue, "getDashboard.sidecar.json")
+            #expect(reference.rawValue == "getDashboard.sidecar.json")
         }
     }
 
+    @Test
     func testReplayProviderReturnsRecordedResponse() async throws {
         let key = ReplayKey(operationID: "getDashboard")
         let store = MemoryReplayStore(records: [
             key: ReplayRecord(response: HTTPResponse(status: .accepted), body: Data("replayed".utf8))
         ])
-        let provider = ReplayResponseProvider(store: store)
+        let transport = ReplayTransport(store: store)
 
-        let output = try await provider.response(
-            for: TransportRequestContext(
-                request: dashboardRequest(),
-                body: nil,
-                baseURL: baseURL(),
-                operationID: "getDashboard"
-            )
+        let (response, body) = try await transport.send(
+            dashboardRequest(),
+            body: nil,
+            baseURL: baseURL(),
+            operationID: "getDashboard"
         )
 
-        XCTAssertEqual(output.response.status, .accepted)
-        let bodyText = try await String(collecting: XCTUnwrap(output.body), upTo: 1024)
-        XCTAssertEqual(bodyText, "replayed")
+        #expect(response.status == .accepted)
+        let bodyText = try await String(collecting: #require(body), upTo: 1024)
+        #expect(bodyText == "replayed")
     }
 
+    @Test
     func testFileReplayStoreWritesAndReadsRecordedResponse() async throws {
         let directory = temporaryDirectory()
         let store = FileReplayStore(rootDirectory: directory)
@@ -235,13 +244,14 @@ final class TransportKitTests: XCTestCase {
 
         try await store.write(record, for: key)
         let optionalLoaded = try await store.record(for: key)
-        let loaded = try XCTUnwrap(optionalLoaded)
+        let loaded = try #require(optionalLoaded)
 
-        XCTAssertEqual(loaded.response.status, .created)
-        XCTAssertEqual(loaded.body, Data("stored".utf8))
-        XCTAssertEqual(loaded.recordedAt, Date(timeIntervalSince1970: 1_700_000_000))
+        #expect(loaded.response.status == .created)
+        #expect(loaded.body == Data("stored".utf8))
+        #expect(loaded.recordedAt == Date(timeIntervalSince1970: 1_700_000_000))
     }
 
+    @Test
     func testSafeReplayFileNameStrategyAvoidsLossyComponentCollisions() {
         let strategy = SafeReplayFileNameStrategy()
 
@@ -250,11 +260,12 @@ final class TransportKitTests: XCTestCase {
         let dottedOperationName = strategy.fileName(for: ReplayKey(operationID: "a.b", scenario: "c"))
         let dottedScenarioName = strategy.fileName(for: ReplayKey(operationID: "a", scenario: "b.c"))
 
-        XCTAssertNotEqual(slashName, underscoreName)
-        XCTAssertNotEqual(dottedOperationName, dottedScenarioName)
-        XCTAssertFalse(slashName.contains("/"))
+        #expect(slashName != underscoreName)
+        #expect(dottedOperationName != dottedScenarioName)
+        #expect(!(slashName.contains("/")))
     }
 
+    @Test
     func testFingerprintedReplayKeyStrategyUsesRequestShape() async throws {
         var request = dashboardRequest()
         request.headerFields[HTTPField.Name("X-Scenario")!] = "one"
@@ -271,9 +282,9 @@ final class TransportKitTests: XCTestCase {
 
         let key = try await strategy.key(for: context)
 
-        XCTAssertEqual(key.operationID, "getDashboard")
-        XCTAssertEqual(key.scenario, "success")
-        XCTAssertNotNil(key.requestFingerprint)
+        #expect(key.operationID == "getDashboard")
+        #expect(key.scenario == "success")
+        #expect(key.requestFingerprint != nil)
 
         request.headerFields[HTTPField.Name("X-Scenario")!] = "two"
         let changedContext = TransportRequestContext(
@@ -284,9 +295,10 @@ final class TransportKitTests: XCTestCase {
         )
         let changedKey = try await strategy.key(for: changedContext)
 
-        XCTAssertNotEqual(key.requestFingerprint, changedKey.requestFingerprint)
+        #expect(key.requestFingerprint != changedKey.requestFingerprint)
     }
 
+    @Test
     func testReplayProviderCanUseFingerprintedFileReplayStore() async throws {
         var request = dashboardRequest()
         request.headerFields[HTTPField.Name("X-Scenario")!] = "recorded"
@@ -309,11 +321,12 @@ final class TransportKitTests: XCTestCase {
 
         let output = try await provider.response(for: context)
 
-        XCTAssertEqual(output.response.status, .accepted)
-        let bodyText = try await String(collecting: XCTUnwrap(output.body), upTo: 1024)
-        XCTAssertEqual(bodyText, "fingerprinted")
+        #expect(output.response.status == .accepted)
+        let bodyText = try await String(collecting: #require(output.body), upTo: 1024)
+        #expect(bodyText == "fingerprinted")
     }
 
+    @Test
     func testRecordingMiddlewareWritesReplayRecordAndPreservesResponseBody() async throws {
         let store = FileReplayStore(rootDirectory: temporaryDirectory())
         let middleware = RecordingClientMiddleware(
@@ -331,17 +344,18 @@ final class TransportKitTests: XCTestCase {
             }
         )
 
-        XCTAssertEqual(response.status, .ok)
-        let responseText = try await String(collecting: XCTUnwrap(responseBody), upTo: 1024)
-        XCTAssertEqual(responseText, "live-response")
+        #expect(response.status == .ok)
+        let responseText = try await String(collecting: #require(responseBody), upTo: 1024)
+        #expect(responseText == "live-response")
 
         let optionalRecord = try await store.record(for: ReplayKey(operationID: "getDashboard"))
-        let record = try XCTUnwrap(optionalRecord)
-        XCTAssertEqual(record.response.status, .ok)
-        XCTAssertEqual(record.body, Data("live-response".utf8))
-        XCTAssertEqual(record.recordedAt, Date(timeIntervalSince1970: 1_700_000_001))
+        let record = try #require(optionalRecord)
+        #expect(record.response.status == .ok)
+        #expect(record.body == Data("live-response".utf8))
+        #expect(record.recordedAt == Date(timeIntervalSince1970: 1_700_000_001))
     }
 
+    @Test
     func testRecordingMiddlewareReplaysBufferedRequestBodyToNextTransport() async throws {
         let store = FileReplayStore(rootDirectory: temporaryDirectory())
         let middleware = RecordingClientMiddleware(writer: store)
@@ -352,15 +366,16 @@ final class TransportKitTests: XCTestCase {
             baseURL: baseURL(),
             operationID: "postDashboard",
             next: { _, body, _ in
-                let requestText = try await String(collecting: XCTUnwrap(body), upTo: 1024)
+                let requestText = try await String(collecting: #require(body), upTo: 1024)
                 return (HTTPResponse(status: .accepted), HTTPBody("echo:\(requestText)"))
             }
         )
 
-        let responseText = try await String(collecting: XCTUnwrap(responseBody), upTo: 1024)
-        XCTAssertEqual(responseText, "echo:request-body")
+        let responseText = try await String(collecting: #require(responseBody), upTo: 1024)
+        #expect(responseText == "echo:request-body")
     }
 
+    @Test
     func testRecordingMiddlewareWithBodyFingerprintPreservesRequestBodyToNextTransport() async throws {
         let store = FileReplayStore(rootDirectory: temporaryDirectory())
         let keyStrategy = FingerprintedReplayKeyStrategy(
@@ -377,12 +392,12 @@ final class TransportKitTests: XCTestCase {
             baseURL: baseURL(),
             operationID: "postDashboard",
             next: { _, body, _ in
-                let requestText = try await String(collecting: XCTUnwrap(body), upTo: 1024)
+                let requestText = try await String(collecting: #require(body), upTo: 1024)
                 return (HTTPResponse(status: .accepted), HTTPBody("echo:\(requestText)"))
             }
         )
 
-        let responseText = try await String(collecting: XCTUnwrap(responseBody), upTo: 1024)
+        let responseText = try await String(collecting: #require(responseBody), upTo: 1024)
         let key = try await keyStrategy.key(
             for: TransportRequestContext(
                 request: dashboardRequest(),
@@ -392,29 +407,27 @@ final class TransportKitTests: XCTestCase {
             )
         )
         let optionalRecord = try await store.record(for: key)
-        let record = try XCTUnwrap(optionalRecord)
+        let record = try #require(optionalRecord)
 
-        XCTAssertEqual(responseText, "echo:request-body")
-        XCTAssertEqual(record.response.status, .accepted)
-        XCTAssertEqual(record.body, Data("echo:request-body".utf8))
+        #expect(responseText == "echo:request-body")
+        #expect(record.response.status == .accepted)
+        #expect(record.body == Data("echo:request-body".utf8))
     }
 
+    @Test
     func testStatefulResponseProviderPersistsUserDefinedState() async throws {
         struct CounterState: Sendable, Equatable {
             var count: Int
         }
 
-        let provider = StatefulResponseProvider(
-            initialState: CounterState(count: 0),
-            handler: ClosureStatefulResponseHandler<CounterState> { _, state in
-                let nextState = CounterState(count: state.count + 1)
-                return StatefulProviderOutput(
-                    state: nextState,
-                    response: TransportResponse(status: .ok, body: HTTPBody("\(nextState.count)"))
-                )
-            }
-        )
-        let transport = ProviderTransport(provider: provider)
+        let transport = StatefulTransport<CounterState>(initialState: CounterState(count: 0)) { _, state in
+            let nextState = CounterState(count: state.count + 1)
+            return StatefulProviderOutput(
+                state: nextState,
+                response: TransportResponse(status: .ok, body: HTTPBody("\(nextState.count)"))
+            )
+        }
+        let provider = transport.provider
 
         let (_, firstBody) = try await transport.send(
             dashboardRequest(),
@@ -429,15 +442,56 @@ final class TransportKitTests: XCTestCase {
             operationID: "getDashboard"
         )
 
-        let firstText = try await String(collecting: XCTUnwrap(firstBody), upTo: 1024)
-        let secondText = try await String(collecting: XCTUnwrap(secondBody), upTo: 1024)
+        let firstText = try await String(collecting: #require(firstBody), upTo: 1024)
+        let secondText = try await String(collecting: #require(secondBody), upTo: 1024)
 
-        XCTAssertEqual(firstText, "1")
-        XCTAssertEqual(secondText, "2")
+        #expect(firstText == "1")
+        #expect(secondText == "2")
         let currentState = await provider.currentState()
-        XCTAssertEqual(currentState, CounterState(count: 2))
+        #expect(currentState == CounterState(count: 2))
     }
 
+    @Test
+    func testStatefulProviderTransportPersistsUserDefinedStateWithCustomHandler() async throws {
+        struct CounterState: Sendable, Equatable {
+            var count: Int
+        }
+
+        let provider = StatefulResponseProvider(
+            initialState: CounterState(count: 0),
+            handler: ClosureStatefulResponseHandler<CounterState> { _, state in
+                let nextState = CounterState(count: state.count + 1)
+                return StatefulProviderOutput(
+                    state: nextState,
+                    response: TransportResponse(status: .ok, body: HTTPBody("\(nextState.count)"))
+                )
+            }
+        )
+        let transport = StatefulProviderTransport(provider: provider)
+
+        let (_, firstBody) = try await transport.send(
+            dashboardRequest(),
+            body: nil,
+            baseURL: baseURL(),
+            operationID: "getDashboard"
+        )
+        let (_, secondBody) = try await transport.send(
+            dashboardRequest(),
+            body: nil,
+            baseURL: baseURL(),
+            operationID: "getDashboard"
+        )
+
+        let firstText = try await String(collecting: #require(firstBody), upTo: 1024)
+        let secondText = try await String(collecting: #require(secondBody), upTo: 1024)
+
+        #expect(firstText == "1")
+        #expect(secondText == "2")
+        let currentState = await provider.currentState()
+        #expect(currentState == CounterState(count: 2))
+    }
+
+    @Test
     func testStatefulResponseProviderSerializesConcurrentMutations() async throws {
         struct CounterState: Sendable, Equatable {
             var count: Int
@@ -466,9 +520,9 @@ final class TransportKitTests: XCTestCase {
                             operationID: "getDashboard"
                         )
                     )
-                    let body = try XCTUnwrap(output.body)
+                    let body = try #require(output.body)
                     let text = try await String(collecting: body, upTo: 1024)
-                    return try XCTUnwrap(Int(text))
+                    return try #require(Int(text))
                 }
             }
 
@@ -480,10 +534,11 @@ final class TransportKitTests: XCTestCase {
         }
         let currentState = await provider.currentState()
 
-        XCTAssertEqual(currentState, CounterState(count: 20))
-        XCTAssertEqual(values.sorted(), Array(1...20))
+        #expect(currentState == CounterState(count: 20))
+        #expect(values.sorted() == Array(1...20))
     }
 
+    @Test
     func testStatefulResponseProviderDoesNotCommitCancelledMutation() async throws {
         struct CounterState: Sendable, Equatable {
             var count: Int
@@ -516,25 +571,26 @@ final class TransportKitTests: XCTestCase {
 
         do {
             _ = try await task.value
-            XCTFail("Expected cancellation.")
+            Issue.record("Expected cancellation.")
         } catch is CancellationError {
         }
         let currentState = await provider.currentState()
 
-        XCTAssertEqual(currentState, CounterState(count: 0))
+        #expect(currentState == CounterState(count: 0))
     }
 
-    func testMultiplexingTransportRoutesByIdentifier() async throws {
-        let fixtureTransport = ProviderTransport(
-            provider: ClosureResponseProvider { _ in
-                TransportResponse(status: .ok, body: HTTPBody("fixture"))
-            }
-        )
+    @Test
+    func testMultiplexingTransportSourcesByTypedSource() async throws {
+        let fixtureTransport = DynamicTransport { _ in
+            TransportResponse(status: .ok, body: HTTPBody("fixture"))
+        }
         let liveTransport = StaticClientTransport(status: .created, body: "live")
-        let selector = RoutingTransportSelector(
-            identifierProvider: ClosureTransportIdentifierProvider { _ in "fixture" },
-            routes: ["fixture": fixtureTransport],
-            defaultTransport: liveTransport
+        let selector = SourceSwitchingTransportSelector(
+            sourceProvider: ClosureTransportSourceProvider { _ in .fixtures },
+            registry: TransportSourceRegistry(
+                fixtures: fixtureTransport,
+                fallback: liveTransport
+            )
         )
         let transport = MultiplexingTransport(selector: selector)
 
@@ -545,11 +601,55 @@ final class TransportKitTests: XCTestCase {
             operationID: "getDashboard"
         )
 
-        XCTAssertEqual(response.status, .ok)
-        let bodyText = try await String(collecting: XCTUnwrap(body), upTo: 1024)
-        XCTAssertEqual(bodyText, "fixture")
+        #expect(response.status == .ok)
+        let bodyText = try await String(collecting: #require(body), upTo: 1024)
+        #expect(bodyText == "fixture")
     }
 
+    @Test
+    func testSourceSwitchingTransportSelectorThrowsWhenSourceIsMissing() async throws {
+        let selector = SourceSwitchingTransportSelector(
+            sourceProvider: StaticTransportSourceProvider(.fixtures),
+            registry: TransportSourceRegistry()
+        )
+
+        do {
+            _ = try await selector.transport(
+                for: TransportRequestContext(
+                    request: dashboardRequest(),
+                    body: nil,
+                    baseURL: baseURL(),
+                    operationID: "getDashboard"
+                )
+            )
+            Issue.record("Expected missing transport error.")
+        } catch TransportSelectionError.missingTransport(let source) {
+            #expect(source == .fixtures)
+        }
+    }
+
+    @Test
+    func testSourceSwitchingTransportSelectorUsesFallbackWhenSourceIsMissing() async throws {
+        let fallbackTransport = StaticClientTransport(status: .created, body: "fallback")
+        let selector = SourceSwitchingTransportSelector(
+            sourceProvider: StaticTransportSourceProvider(.fixtures),
+            registry: TransportSourceRegistry(fallback: fallbackTransport)
+        )
+        let transport = MultiplexingTransport(selector: selector)
+
+        let (response, body) = try await transport.send(
+            dashboardRequest(),
+            body: nil,
+            baseURL: baseURL(),
+            operationID: "getDashboard"
+        )
+
+        #expect(response.status == .created)
+        let bodyText = try await String(collecting: #require(body), upTo: 1024)
+        #expect(bodyText == "fallback")
+    }
+
+    @Test
     func testMissingFixtureThrowsConfigurationError() async throws {
         let provider = FixtureResponseProvider(
             loader: MemoryFixtureLoader(fixtures: [:]),
@@ -565,9 +665,9 @@ final class TransportKitTests: XCTestCase {
                     operationID: "getDashboard"
                 )
             )
-            XCTFail("Expected missing fixture error.")
+            Issue.record("Expected missing fixture error.")
         } catch FixtureError.missingFixture(let reference) {
-            XCTAssertEqual(reference.rawValue, "getDashboard.success.json")
+            #expect(reference.rawValue == "getDashboard.success.json")
         }
     }
 }

@@ -1,12 +1,15 @@
+import Foundation
 import OpenAPITransportKit
-import XCTest
+import Testing
 
-final class UmbrellaImportTests: XCTestCase {
+@Suite
+struct UmbrellaImportTests {
+
+    @Test
     func testUmbrellaModuleReexportsPublicModules() async throws {
-        let provider = ClosureResponseProvider { _ in
+        let transport = DynamicTransport { _ in
             TransportResponse(status: .ok)
         }
-        let transport = ProviderTransport(provider: provider)
 
         let (response, _) = try await transport.send(
             HTTPRequest(method: .get, scheme: "https", authority: "example.com", path: "/"),
@@ -15,7 +18,6 @@ final class UmbrellaImportTests: XCTestCase {
             operationID: "health"
         )
 
-        XCTAssertEqual(response.status, .ok)
+        #expect(response.status == .ok)
     }
 }
-

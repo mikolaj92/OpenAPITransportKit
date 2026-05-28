@@ -21,3 +21,18 @@ public struct ReplayResponseProvider: ResponseProvider {
     }
 }
 
+public typealias ReplayTransport = ProviderTransport<ReplayResponseProvider>
+
+public extension ProviderTransport where Provider == ReplayResponseProvider {
+    init(
+        store: any ReplayStore,
+        keyStrategy: any ReplayKeyStrategy = OperationIDReplayKeyStrategy()
+    ) {
+        self.init(
+            provider: ReplayResponseProvider(
+                store: store,
+                keyStrategy: keyStrategy
+            )
+        )
+    }
+}

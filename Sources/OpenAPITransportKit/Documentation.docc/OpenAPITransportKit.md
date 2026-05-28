@@ -25,16 +25,15 @@ application architecture.
 ## Quick Example
 
 ```swift
-let provider = FixtureResponseProvider(
+let transport = FixtureTransport(
     loader: MemoryFixtureLoader(fixtures: [
         "getDashboard.success.json": FixturePayload(string: #"{"items":[]}"#)
-    ]),
-    scenarioProvider: StaticScenarioProvider(.success)
+    ])
 )
 
 let client = Client(
     serverURL: URL(string: "https://example.com")!,
-    transport: ProviderTransport(provider: provider)
+    transport: transport
 )
 ```
 
@@ -61,6 +60,8 @@ let client = Client(
 
 - ``ProviderTransport``
 - ``MultiplexingTransport``
+- ``TransportSource``
+- ``TransportSourceRegistry``
 - ``ResponseProvider``
 - ``TransportRequestContext``
 - ``TransportResponse``
@@ -68,6 +69,7 @@ let client = Client(
 ### Fixtures
 
 - ``FixtureResponseProvider``
+- ``FixtureTransport``
 - ``FixtureResolver``
 - ``FixtureLoader``
 - ``FixtureScenario``
@@ -76,6 +78,7 @@ let client = Client(
 ### Replay And Recording
 
 - ``ReplayResponseProvider``
+- ``ReplayTransport``
 - ``ReplayStore``
 - ``ReplayStoreWriter``
 - ``ReplayKey``
@@ -85,5 +88,7 @@ let client = Client(
 ### Dynamic And Stateful
 
 - ``ClosureResponseProvider``
+- ``DynamicTransport``
+- ``StatefulTransport``
 - ``StatefulResponseProvider``
 - ``StatefulResponseHandler``

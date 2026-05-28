@@ -6,6 +6,9 @@ The package has two validation layers:
 - a separate generated-client integration package that uses
   `swift-openapi-generator`.
 
+Both layers use Swift Testing (`Testing`, `@Suite`, `@Test`, `#expect`,
+`#require`) only.
+
 ## Generated Client Proof
 
 `IntegrationTests/GeneratedClient` contains:

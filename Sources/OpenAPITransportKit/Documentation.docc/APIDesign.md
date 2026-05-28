@@ -13,6 +13,16 @@ The stable center is:
 
 Everything else adapts a response source to this shape.
 
+The user-facing API should prefer concrete transport facades:
+
+- ``FixtureTransport``
+- ``ReplayTransport``
+- ``DynamicTransport``
+- ``StatefulTransport``
+
+``ProviderTransport`` remains the low-level adapter for custom
+``ResponseProvider`` implementations.
+
 ## Extension Points
 
 Users can provide:
@@ -26,6 +36,7 @@ Users can provide:
 - custom ``ReplayKeyStrategy`` implementations;
 - custom ``RequestFingerprinter`` implementations;
 - custom ``StatefulResponseHandler`` implementations.
+- custom ``TransportSourceProvider`` implementations.
 
 ## Error Philosophy
 
@@ -62,4 +73,3 @@ After `1.0.0`:
 - additive protocols and providers are minor releases;
 - bug fixes are patch releases;
 - source-breaking API changes are major releases.
-

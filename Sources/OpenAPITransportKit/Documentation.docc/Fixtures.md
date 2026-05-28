@@ -23,9 +23,9 @@ getDashboard.error.json
 Use ``StaticScenarioProvider`` for a fixed scenario.
 
 ```swift
-let provider = FixtureResponseProvider(
+let transport = FixtureTransport(
     loader: loader,
-    scenarioProvider: StaticScenarioProvider(.success)
+    scenario: .success
 )
 ```
 

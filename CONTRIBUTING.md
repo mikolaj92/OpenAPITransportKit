@@ -13,6 +13,9 @@ swift build -c release
 swift test -c release
 ```
 
+Tests must use Swift Testing (`Testing`, `@Suite`, `@Test`, `#expect`,
+`#require`) only.
+
 ## API Rules
 
 - Keep the primary integration point as `ClientTransport`.

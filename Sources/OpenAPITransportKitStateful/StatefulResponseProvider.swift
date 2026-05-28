@@ -76,5 +76,32 @@ public actor StatefulResponseProvider<Handler: StatefulResponseHandler>: Respons
     }
 }
 
-public typealias StatefulTransport<Handler: StatefulResponseHandler> =
+public typealias StatefulTransport<State: Sendable> =
+    ProviderTransport<StatefulResponseProvider<ClosureStatefulResponseHandler<State>>>
+
+public typealias StatefulProviderTransport<Handler: StatefulResponseHandler> =
     ProviderTransport<StatefulResponseProvider<Handler>>
+
+public extension ProviderTransport {
+    init<Handler: StatefulResponseHandler>(
+        initialState: Handler.State,
+        handler: Handler
+    ) where Provider == StatefulResponseProvider<Handler> {
+        self.init(
+            provider: StatefulResponseProvider(
+                initialState: initialState,
+                handler: handler
+            )
+        )
+    }
+
+    init<State: Sendable>(
+        initialState: State,
+        _ respond: @escaping @Sendable (TransportRequestContext, State) async throws -> StatefulProviderOutput<State>
+    ) where Provider == StatefulResponseProvider<ClosureStatefulResponseHandler<State>> {
+        self.init(
+            initialState: initialState,
+            handler: ClosureStatefulResponseHandler(respond)
+        )
+    }
+}

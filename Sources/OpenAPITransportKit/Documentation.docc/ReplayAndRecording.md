@@ -14,7 +14,7 @@ for later replay.
 The simplest strategy uses only `operationID`.
 
 ```swift
-let provider = ReplayResponseProvider(
+let transport = ReplayTransport(
     store: store,
     keyStrategy: OperationIDReplayKeyStrategy()
 )
@@ -53,17 +53,17 @@ Records are JSON files. File names are derived from ``ReplayKey`` through a
 The default ``SafeReplayFileNameStrategy`` percent-encodes key components and
 labels component boundaries to avoid lossy filename collisions.
 
-## Replay Provider
+## Replay Transport
 
 ```swift
-let provider = ReplayResponseProvider(
+let transport = ReplayTransport(
     store: store,
     keyStrategy: strategy
 )
 
 let client = Client(
     serverURL: URL(string: "https://example.com/api")!,
-    transport: ProviderTransport(provider: provider)
+    transport: transport
 )
 ```
 

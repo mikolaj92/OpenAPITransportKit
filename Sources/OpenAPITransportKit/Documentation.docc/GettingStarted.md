@@ -22,16 +22,13 @@ Use the split products later if a package wants a narrower dependency surface.
 import Foundation
 import OpenAPITransportKit
 
-let provider = FixtureResponseProvider(
+let transport = FixtureTransport(
     loader: MemoryFixtureLoader(fixtures: [
         "getDashboard.success.json": FixturePayload(
             string: #"{"items":["one","two"]}"#
         )
-    ]),
-    scenarioProvider: StaticScenarioProvider(.success)
+    ])
 )
-
-let transport = ProviderTransport(provider: provider)
 ```
 
 The fixture key is based on the OpenAPI `operationId`, not on the request URL.
@@ -57,14 +54,14 @@ Use ``MultiplexingTransport`` when an app needs runtime switching.
 
 ```swift
 let transport = MultiplexingTransport(
-    selector: RoutingTransportSelector(
-        identifierProvider: ClosureTransportIdentifierProvider { _ in "fixtures" },
-        routes: [
-            "fixtures": ProviderTransport(provider: fixtureProvider),
-            "replay": ProviderTransport(provider: replayProvider),
-            "dynamic": DynamicTransport(provider: dynamicProvider),
-            "live": liveTransport
-        ]
+    selector: SourceSwitchingTransportSelector(
+        sourceProvider: ClosureTransportSourceProvider { _ in .fixtures },
+        registry: TransportSourceRegistry(
+            live: liveTransport,
+            fixtures: fixtureTransport,
+            replay: replayTransport,
+            dynamic: dynamicTransport
+        )
     )
 )
 ```

@@ -20,7 +20,7 @@ package. It is not a runtime dependency of the main library package.
 
 ## Modules
 
-- `OpenAPITransportKitCore`: provider adapter, multiplexing transport, routing primitives.
+- `OpenAPITransportKitCore`: provider adapter, multiplexing transport, source-selection primitives.
 - `OpenAPITransportKitFixtures`: operationId-based fixture responses.
 - `OpenAPITransportKitReplay`: replay stores, request fingerprinting, and recording middleware.
 - `OpenAPITransportKitDynamic`: closure-based dynamic responses.
@@ -32,16 +32,15 @@ package. It is not a runtime dependency of the main library package.
 ```swift
 import OpenAPITransportKit
 
-let fixtureProvider = FixtureResponseProvider(
+let transport = FixtureTransport(
     loader: MemoryFixtureLoader(fixtures: [
         "getDashboard.success.json": FixturePayload(string: #"{"items":[]}"#)
-    ]),
-    scenarioProvider: StaticScenarioProvider(.success)
+    ])
 )
 
 let client = Client(
     serverURL: URL(string: "https://example.com")!,
-    transport: ProviderTransport(provider: fixtureProvider)
+    transport: transport
 )
 ```
 
@@ -79,23 +78,21 @@ For repeated headers, use `headerFields`:
 ## Dynamic Example
 
 ```swift
-let transport = DynamicTransport(
-    provider: ClosureResponseProvider { context in
-        TransportResponse(status: .ok, body: HTTPBody(#"{"ok":true}"#))
-    }
-)
+let transport = DynamicTransport { context in
+    TransportResponse(status: .ok, body: HTTPBody(#"{"ok":true}"#))
+}
 ```
 
-## Routing Example
+## Source Switching Example
 
 ```swift
 let transport = MultiplexingTransport(
-    selector: RoutingTransportSelector(
-        identifierProvider: ClosureTransportIdentifierProvider { _ in "fixtures" },
-        routes: [
-            "fixtures": ProviderTransport(provider: fixtureProvider),
-            "live": URLSessionTransport()
-        ]
+    selector: SourceSwitchingTransportSelector(
+        sourceProvider: ClosureTransportSourceProvider { _ in .fixtures },
+        registry: TransportSourceRegistry(
+            live: URLSessionTransport(),
+            fixtures: fixtureTransport
+        )
     )
 )
 ```
@@ -108,7 +105,7 @@ let keyStrategy = FingerprintedReplayKeyStrategy(
     fingerprinter: StableRequestFingerprinter(includedHeaderNames: ["Accept"])
 )
 
-let replayProvider = ReplayResponseProvider(
+let replayTransport = ReplayTransport(
     store: store,
     keyStrategy: keyStrategy
 )
@@ -138,7 +135,9 @@ which are defined by Apple's `swift-http-types` package. This package imports
 ## Current Coverage
 
 The root test suite covers the transport layers without pulling in
-`swift-openapi-generator`.
+`swift-openapi-generator`. Tests use Swift Testing only, so the package stays
+aligned with SwiftPM/Linux/Android-style toolchains instead of IDE-specific test
+assumptions.
 
 Generated-client proof lives in `IntegrationTests/GeneratedClient`. It uses the
 build plugin to generate a real OpenAPI client from `openapi.yaml` and verifies:
