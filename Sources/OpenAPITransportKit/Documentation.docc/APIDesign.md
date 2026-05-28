@@ -6,37 +6,37 @@ The API is intentionally small and transport-centered.
 
 The stable center is:
 
-- ``ProviderTransport``
-- ``ResponseProvider``
-- ``TransportRequestContext``
-- ``TransportResponse``
+- ``OpenAPITransportKitCore/ProviderTransport``
+- ``OpenAPITransportKitCore/ResponseProvider``
+- ``OpenAPITransportKitCore/TransportRequestContext``
+- ``OpenAPITransportKitCore/TransportResponse``
 
 Everything else adapts a response source to this shape.
 
 The user-facing API should prefer concrete transport facades:
 
-- ``FixtureTransport``
-- ``ReplayTransport``
-- ``DynamicTransport``
-- ``StatefulTransport``
+- ``OpenAPITransportKitFixtures/FixtureTransport``
+- ``OpenAPITransportKitReplay/ReplayTransport``
+- ``OpenAPITransportKitDynamic/DynamicTransport``
+- ``OpenAPITransportKitStateful/StatefulTransport``
 
-``ProviderTransport`` remains the low-level adapter for custom
-``ResponseProvider`` implementations.
+``OpenAPITransportKitCore/ProviderTransport`` remains the low-level adapter for custom
+``OpenAPITransportKitCore/ResponseProvider`` implementations.
 
 ## Extension Points
 
 Users can provide:
 
 - custom `ClientTransport` implementations;
-- custom ``ResponseProvider`` implementations;
-- custom ``FixtureResolver`` implementations;
-- custom ``ScenarioProvider`` implementations;
-- custom ``FixtureLoader`` implementations;
-- custom ``ReplayStore`` implementations;
-- custom ``ReplayKeyStrategy`` implementations;
-- custom ``RequestFingerprinter`` implementations;
-- custom ``StatefulResponseHandler`` implementations.
-- custom ``TransportSourceProvider`` implementations.
+- custom ``OpenAPITransportKitCore/ResponseProvider`` implementations;
+- custom ``OpenAPITransportKitFixtures/FixtureResolver`` implementations;
+- custom ``OpenAPITransportKitFixtures/ScenarioProvider`` implementations;
+- custom ``OpenAPITransportKitFixtures/FixtureLoader`` implementations;
+- custom ``OpenAPITransportKitReplay/ReplayStore`` implementations;
+- custom ``OpenAPITransportKitReplay/ReplayKeyStrategy`` implementations;
+- custom ``OpenAPITransportKitReplay/RequestFingerprinter`` implementations;
+- custom ``OpenAPITransportKitStateful/StatefulResponseHandler`` implementations;
+- custom ``OpenAPITransportKitCore/TransportSourceProvider`` implementations.
 
 ## Error Philosophy
 

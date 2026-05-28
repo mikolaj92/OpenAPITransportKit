@@ -25,8 +25,8 @@ ProviderTransport
 
 ## Transport Layer
 
-``ProviderTransport`` adapts a ``ResponseProvider`` to
-`OpenAPIRuntime.ClientTransport`.
+``OpenAPITransportKitCore/ProviderTransport`` adapts a
+``OpenAPITransportKitCore/ResponseProvider`` to `OpenAPIRuntime.ClientTransport`.
 
 It receives:
 
@@ -44,27 +44,30 @@ That is intentionally the same low-level surface used by generated clients.
 
 ## Provider Layer
 
-``ResponseProvider`` is the stable extension point for response sources.
+``OpenAPITransportKitCore/ResponseProvider`` is the stable extension point for response sources.
 
 Providers should not know generated DTOs or domain models. They operate on
-``TransportRequestContext`` and return ``TransportResponse``.
+``OpenAPITransportKitCore/TransportRequestContext`` and return
+``OpenAPITransportKitCore/TransportResponse``.
 
 ## Source Selection Layer
 
-``MultiplexingTransport`` delegates to another transport selected per request.
-This supports app-level mode switching without putting app concerns into the
-library.
+``OpenAPITransportKitCore/MultiplexingTransport`` delegates to another transport
+selected per request. This supports app-level mode switching without putting app
+concerns into the library.
 
-Built-in sources use ``TransportSource`` values such as `.live`, `.fixtures`,
-`.replay`, `.dynamic`, and `.stateful`. ``TransportSourceRegistry`` exposes named
-slots for those sources instead of a string-keyed public dictionary. Custom
-selection belongs in a user-provided ``TransportSelector``.
+Built-in sources use ``OpenAPITransportKitCore/TransportSource`` values such as
+`.live`, `.fixtures`, `.replay`, `.dynamic`, and `.stateful`.
+``OpenAPITransportKitCore/TransportSourceRegistry`` exposes named slots for those
+sources instead of a string-keyed public dictionary. Custom selection belongs in
+a user-provided ``OpenAPITransportKitCore/TransportSelector``.
 
 ## Middleware Layer
 
 Recording is a middleware concern because it needs to observe live responses.
-``RecordingClientMiddleware`` captures the request/response exchange and writes
-a ``ReplayRecord`` while still returning a usable body to the generated client.
+``OpenAPITransportKitReplay/RecordingClientMiddleware`` captures the
+request/response exchange and writes a ``OpenAPITransportKitReplay/ReplayRecord``
+while still returning a usable body to the generated client.
 
 ## Why Not Mock APIProtocol?
 

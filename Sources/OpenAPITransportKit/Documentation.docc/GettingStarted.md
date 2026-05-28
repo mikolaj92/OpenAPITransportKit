@@ -50,7 +50,7 @@ handles status codes, and returns generated DTOs.
 
 ## Switch Response Sources
 
-Use ``MultiplexingTransport`` when an app needs runtime switching.
+Use ``OpenAPITransportKitCore/MultiplexingTransport`` when an app needs runtime switching.
 
 ```swift
 let transport = MultiplexingTransport(

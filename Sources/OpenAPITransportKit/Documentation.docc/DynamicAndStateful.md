@@ -4,7 +4,7 @@ Dynamic and stateful providers generate responses programmatically.
 
 ## Dynamic Responses
 
-Use ``DynamicTransport`` for stateless response generation.
+Use ``OpenAPITransportKitDynamic/DynamicTransport`` for stateless response generation.
 
 ```swift
 let transport = DynamicTransport { context in
@@ -25,7 +25,7 @@ that need lightweight branching.
 
 ## Stateful Responses
 
-Use ``StatefulTransport`` for a lightweight in-memory backend.
+Use ``OpenAPITransportKitStateful/StatefulTransport`` for a lightweight in-memory backend.
 
 ```swift
 struct AppState: Sendable {

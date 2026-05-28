@@ -5,7 +5,7 @@ for later replay.
 
 ## Replay Keys
 
-``ReplayKey`` contains:
+``OpenAPITransportKitReplay/ReplayKey`` contains:
 
 - `operationID`
 - optional `requestFingerprint`
@@ -33,13 +33,13 @@ let strategy = FingerprintedReplayKeyStrategy(
 )
 ```
 
-``StableRequestFingerprinter`` is stable and non-cryptographic. It is designed
-for replay identity, not security.
+``OpenAPITransportKitReplay/StableRequestFingerprinter`` is stable and
+non-cryptographic. It is designed for replay identity, not security.
 
 If `includesBody` is `true`, fingerprinting consumes `HTTPBody`.
-``RecordingClientMiddleware`` buffers the request first and can safely forward a
-fresh body to the live transport. Custom key strategies should buffer before
-using body-based fingerprints.
+``OpenAPITransportKitReplay/RecordingClientMiddleware`` buffers the request first
+and can safely forward a fresh body to the live transport. Custom key strategies
+should buffer before using body-based fingerprints.
 
 ## File Replay Store
 
@@ -47,11 +47,13 @@ using body-based fingerprints.
 let store = FileReplayStore(rootDirectory: replayDirectory)
 ```
 
-Records are JSON files. File names are derived from ``ReplayKey`` through a
-``ReplayFileNameStrategy``.
+Records are JSON files. File names are derived from
+``OpenAPITransportKitReplay/ReplayKey`` through a
+``OpenAPITransportKitReplay/ReplayFileNameStrategy``.
 
-The default ``SafeReplayFileNameStrategy`` percent-encodes key components and
-labels component boundaries to avoid lossy filename collisions.
+The default ``OpenAPITransportKitReplay/SafeReplayFileNameStrategy``
+percent-encodes key components and labels component boundaries to avoid lossy
+filename collisions.
 
 ## Replay Transport
 
@@ -67,7 +69,7 @@ let client = Client(
 )
 ```
 
-Missing records throw ``ReplayError/missingRecord(_:)``. They do not synthesize
+Missing records throw `ReplayError.missingRecord(_:)`. They do not synthesize
 HTTP responses.
 
 ## Recording Middleware
@@ -89,9 +91,10 @@ Recording is middleware because it observes the live transport response.
 
 ## Body Buffering
 
-`HTTPBody` may be single-pass. ``RecordingClientMiddleware`` buffers request
-and response bodies with configurable limits, then creates fresh `HTTPBody`
-instances for downstream use.
+`HTTPBody` may be single-pass.
+``OpenAPITransportKitReplay/RecordingClientMiddleware`` buffers request and
+response bodies with configurable limits, then creates fresh `HTTPBody` instances
+for downstream use.
 
 Defaults:
 

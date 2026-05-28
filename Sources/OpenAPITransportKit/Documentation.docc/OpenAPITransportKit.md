@@ -58,37 +58,37 @@ let client = Client(
 
 ### Core Types
 
-- ``ProviderTransport``
-- ``MultiplexingTransport``
-- ``TransportSource``
-- ``TransportSourceRegistry``
-- ``ResponseProvider``
-- ``TransportRequestContext``
-- ``TransportResponse``
+- ``OpenAPITransportKitCore/ProviderTransport``
+- ``OpenAPITransportKitCore/MultiplexingTransport``
+- ``OpenAPITransportKitCore/TransportSource``
+- ``OpenAPITransportKitCore/TransportSourceRegistry``
+- ``OpenAPITransportKitCore/ResponseProvider``
+- ``OpenAPITransportKitCore/TransportRequestContext``
+- ``OpenAPITransportKitCore/TransportResponse``
 
-### Fixtures
+### Fixture Types
 
-- ``FixtureResponseProvider``
-- ``FixtureTransport``
-- ``FixtureResolver``
-- ``FixtureLoader``
-- ``FixtureScenario``
-- ``FixturePayload``
+- ``OpenAPITransportKitFixtures/FixtureResponseProvider``
+- ``OpenAPITransportKitFixtures/FixtureTransport``
+- ``OpenAPITransportKitFixtures/FixtureResolver``
+- ``OpenAPITransportKitFixtures/FixtureLoader``
+- ``OpenAPITransportKitFixtures/FixtureScenario``
+- ``OpenAPITransportKitFixtures/FixturePayload``
 
 ### Replay And Recording
 
-- ``ReplayResponseProvider``
-- ``ReplayTransport``
-- ``ReplayStore``
-- ``ReplayStoreWriter``
-- ``ReplayKey``
-- ``RequestFingerprinter``
-- ``RecordingClientMiddleware``
+- ``OpenAPITransportKitReplay/ReplayResponseProvider``
+- ``OpenAPITransportKitReplay/ReplayTransport``
+- ``OpenAPITransportKitReplay/ReplayStore``
+- ``OpenAPITransportKitReplay/ReplayStoreWriter``
+- ``OpenAPITransportKitReplay/ReplayKey``
+- ``OpenAPITransportKitReplay/RequestFingerprinter``
+- ``OpenAPITransportKitReplay/RecordingClientMiddleware``
 
 ### Dynamic And Stateful
 
-- ``ClosureResponseProvider``
-- ``DynamicTransport``
-- ``StatefulTransport``
-- ``StatefulResponseProvider``
-- ``StatefulResponseHandler``
+- ``OpenAPITransportKitDynamic/ClosureResponseProvider``
+- ``OpenAPITransportKitDynamic/DynamicTransport``
+- ``OpenAPITransportKitStateful/StatefulTransport``
+- ``OpenAPITransportKitStateful/StatefulResponseProvider``
+- ``OpenAPITransportKitStateful/StatefulResponseHandler``

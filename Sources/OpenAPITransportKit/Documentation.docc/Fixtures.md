@@ -20,7 +20,7 @@ getDashboard.error.json
 
 ## Scenarios
 
-Use ``StaticScenarioProvider`` for a fixed scenario.
+Use ``OpenAPITransportKitFixtures/StaticScenarioProvider`` for a fixed scenario.
 
 ```swift
 let transport = FixtureTransport(
@@ -29,8 +29,8 @@ let transport = FixtureTransport(
 )
 ```
 
-Use ``ClosureScenarioProvider`` when scenario selection depends on runtime
-context.
+Use ``OpenAPITransportKitFixtures/ClosureScenarioProvider`` when scenario
+selection depends on runtime context.
 
 ```swift
 let scenarioProvider = ClosureScenarioProvider { context in
@@ -59,8 +59,8 @@ getDashboard.success.meta.json
 }
 ```
 
-If metadata is missing, ``FixtureResponseProvider`` uses
-``FixtureResponseDefaults``. The default is JSON `200 OK`.
+If metadata is missing, ``OpenAPITransportKitFixtures/FixtureResponseProvider`` uses
+``OpenAPITransportKitFixtures/FixtureResponseDefaults``. The default is JSON `200 OK`.
 
 Metadata headers are merged with defaults. A sidecar that adds `X-Fixture` does
 not remove the default `Content-Type: application/json`.
@@ -114,12 +114,12 @@ fast instead of silently loading a root resource.
 
 ## Missing Fixtures
 
-Missing fixtures throw ``FixtureError/missingFixture(_:)``. They do not return
+Missing fixtures throw `FixtureError.missingFixture(_:)`. They do not return
 HTTP `404`, because the problem is fixture configuration, not backend behavior.
 
 ## Custom Resolvers
 
-Implement ``FixtureResolver`` to use another naming scheme.
+Implement ``OpenAPITransportKitFixtures/FixtureResolver`` to use another naming scheme.
 
 ```swift
 struct DirectoryFixtureResolver: FixtureResolver {
