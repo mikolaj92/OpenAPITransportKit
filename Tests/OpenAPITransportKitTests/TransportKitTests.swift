@@ -173,7 +173,7 @@ struct TransportKitTests {
     }
 
     @Test
-    func testBundleFixtureLoaderReadsProcessedResourceAndMetadataSidecar() async throws {
+    func testBundleFixtureLoaderReadsResourceAndMetadataSidecar() async throws {
         let provider = FixtureResponseProvider(
             loader: BundleFixtureLoader(
                 bundle: .module,

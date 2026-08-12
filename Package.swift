@@ -81,7 +81,9 @@ let package = Package(
                 .product(name: "HTTPTypes", package: "swift-http-types"),
             ],
             resources: [
-                .process("Resources")
+                // Preserve Fixtures/ so BundleFixtureLoader can use a single
+                // subdirectory path without a root-fallback shim.
+                .copy("Resources/Fixtures")
             ]
         ),
     ]

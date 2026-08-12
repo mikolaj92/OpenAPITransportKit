@@ -112,6 +112,10 @@ Lookup is single-path and fail-closed: a missing subdirectory resource fails
 instead of silently loading a root resource. Pass `subdirectory: nil` when
 fixtures live at the bundle root.
 
+With SwiftPM, prefer `.copy("…/Fixtures")` when you need a stable subdirectory.
+`.process` flattens unprocessed files to the resource-bundle root, so a
+`subdirectory` lookup will not find them there.
+
 ## Missing Fixtures
 
 Missing fixtures throw `FixtureError.missingFixture(_:)`. They do not return
