@@ -140,19 +140,21 @@ public extension PayloadFixtureLoader where DataLoader == FileSystemFixtureDataL
     }
 }
 
+/// Loads fixture bytes from a `Bundle` resource lookup.
+///
+/// Lookup is fail-closed and single-path: resources are resolved only with the
+/// configured `subdirectory` (or bundle root when `subdirectory` is `nil`).
+/// There is no silent downgrade from a missing subdirectory to root resources.
 public struct BundleFixtureDataLoader: FixtureDataLoader {
     public var bundle: Bundle
     public var subdirectory: String?
-    public var allowsRootFallback: Bool
 
     public init(
         bundle: Bundle,
-        subdirectory: String? = nil,
-        allowsRootFallback: Bool = false
+        subdirectory: String? = nil
     ) {
         self.bundle = bundle
         self.subdirectory = subdirectory
-        self.allowsRootFallback = allowsRootFallback
     }
 
     public func loadData(_ reference: FixtureReference) async throws -> Data {
@@ -160,10 +162,7 @@ public struct BundleFixtureDataLoader: FixtureDataLoader {
             forResource: reference.resourceName,
             withExtension: reference.resourceExtension,
             subdirectory: subdirectory
-        ) ?? (allowsRootFallback ? bundle.url(
-            forResource: reference.resourceName,
-            withExtension: reference.resourceExtension
-        ) : nil)
+        )
         guard let url else {
             throw FixtureError.missingFixture(reference)
         }
@@ -179,15 +178,13 @@ public extension PayloadFixtureLoader where DataLoader == BundleFixtureDataLoade
     init(
         bundle: Bundle,
         subdirectory: String? = nil,
-        allowsRootFallback: Bool = false,
         metadataReferenceResolver: any FixtureMetadataReferenceResolver = DotSeparatedFixtureMetadataReferenceResolver(),
         metadataDecoder: any FixtureMetadataDecoder = JSONFixtureMetadataDecoder()
     ) {
         self.init(
             dataLoader: BundleFixtureDataLoader(
                 bundle: bundle,
-                subdirectory: subdirectory,
-                allowsRootFallback: allowsRootFallback
+                subdirectory: subdirectory
             ),
             metadataReferenceResolver: metadataReferenceResolver,
             metadataDecoder: metadataDecoder

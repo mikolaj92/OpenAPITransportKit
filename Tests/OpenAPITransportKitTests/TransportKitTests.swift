@@ -177,8 +177,7 @@ struct TransportKitTests {
         let provider = FixtureResponseProvider(
             loader: BundleFixtureLoader(
                 bundle: .module,
-                subdirectory: "Fixtures",
-                allowsRootFallback: true
+                subdirectory: "Fixtures"
             ),
             scenarioProvider: StaticScenarioProvider("sidecar")
         )
@@ -200,7 +199,7 @@ struct TransportKitTests {
     }
 
     @Test
-    func testBundleFixtureLoaderRequiresExplicitRootFallback() async throws {
+    func testBundleFixtureLoaderDoesNotFallBackToRootWhenSubdirectoryIsMissing() async throws {
         let loader = BundleFixtureLoader(bundle: .module, subdirectory: "Missing")
 
         do {
@@ -588,8 +587,8 @@ struct TransportKitTests {
         let selector = SourceSwitchingTransportSelector(
             sourceProvider: ClosureTransportSourceProvider { _ in .fixtures },
             registry: TransportSourceRegistry(
-                fixtures: fixtureTransport,
-                fallback: liveTransport
+                live: liveTransport,
+                fixtures: fixtureTransport
             )
         )
         let transport = MultiplexingTransport(selector: selector)
@@ -629,24 +628,26 @@ struct TransportKitTests {
     }
 
     @Test
-    func testSourceSwitchingTransportSelectorUsesFallbackWhenSourceIsMissing() async throws {
-        let fallbackTransport = StaticClientTransport(status: .created, body: "fallback")
+    func testSourceSwitchingTransportSelectorDoesNotFallBackWhenSourceIsMissing() async throws {
+        let liveTransport = StaticClientTransport(status: .created, body: "live")
         let selector = SourceSwitchingTransportSelector(
             sourceProvider: StaticTransportSourceProvider(.fixtures),
-            registry: TransportSourceRegistry(fallback: fallbackTransport)
-        )
-        let transport = MultiplexingTransport(selector: selector)
-
-        let (response, body) = try await transport.send(
-            dashboardRequest(),
-            body: nil,
-            baseURL: baseURL(),
-            operationID: "getDashboard"
+            registry: TransportSourceRegistry(live: liveTransport)
         )
 
-        #expect(response.status == .created)
-        let bodyText = try await String(collecting: #require(body), upTo: 1024)
-        #expect(bodyText == "fallback")
+        do {
+            _ = try await selector.transport(
+                for: TransportRequestContext(
+                    request: dashboardRequest(),
+                    body: nil,
+                    baseURL: baseURL(),
+                    operationID: "getDashboard"
+                )
+            )
+            Issue.record("Expected missing transport error.")
+        } catch TransportSelectionError.missingTransport(let source) {
+            #expect(source == .fixtures)
+        }
     }
 
     @Test
