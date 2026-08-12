@@ -52,28 +52,29 @@ public struct StaticTransportSourceProvider: TransportSourceProvider {
     }
 }
 
+/// Named transport slots for ``TransportSource`` values.
+///
+/// Lookup is fail-closed: a missing slot returns `nil`. There is no silent
+/// fallback transport when the selected source is unset.
 public struct TransportSourceRegistry: Sendable {
     public var live: (any ClientTransport)?
     public var fixtures: (any ClientTransport)?
     public var replay: (any ClientTransport)?
     public var dynamic: (any ClientTransport)?
     public var stateful: (any ClientTransport)?
-    public var fallback: (any ClientTransport)?
 
     public init(
         live: (any ClientTransport)? = nil,
         fixtures: (any ClientTransport)? = nil,
         replay: (any ClientTransport)? = nil,
         dynamic: (any ClientTransport)? = nil,
-        stateful: (any ClientTransport)? = nil,
-        fallback: (any ClientTransport)? = nil
+        stateful: (any ClientTransport)? = nil
     ) {
         self.live = live
         self.fixtures = fixtures
         self.replay = replay
         self.dynamic = dynamic
         self.stateful = stateful
-        self.fallback = fallback
     }
 
     public mutating func setTransport(_ transport: any ClientTransport, for source: TransportSource) {
@@ -92,7 +93,7 @@ public struct TransportSourceRegistry: Sendable {
     }
 
     public func transport(for source: TransportSource) -> (any ClientTransport)? {
-        let selectedTransport = switch source {
+        switch source {
         case .live:
             live
         case .fixtures:
@@ -104,7 +105,6 @@ public struct TransportSourceRegistry: Sendable {
         case .stateful:
             stateful
         }
-        return selectedTransport ?? fallback
     }
 }
 

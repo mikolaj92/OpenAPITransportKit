@@ -101,16 +101,20 @@ Use this in command-line tools, local development, and server-side Swift.
 ```swift
 let loader = BundleFixtureLoader(
     bundle: .module,
-    subdirectory: "Fixtures",
-    allowsRootFallback: true
+    subdirectory: "Fixtures"
 )
 ```
 
 Use this with SwiftPM resources or app bundles. On non-Apple platforms, this
 still uses Foundation `Bundle` support.
 
-Root fallback is opt-in. Keep it off when a missing subdirectory should fail
-fast instead of silently loading a root resource.
+Lookup is single-path and fail-closed: a missing subdirectory resource fails
+instead of silently loading a root resource. Pass `subdirectory: nil` when
+fixtures live at the bundle root.
+
+With SwiftPM, prefer `.copy("…/Fixtures")` when you need a stable subdirectory.
+`.process` flattens unprocessed files to the resource-bundle root, so a
+`subdirectory` lookup will not find them there.
 
 ## Missing Fixtures
 

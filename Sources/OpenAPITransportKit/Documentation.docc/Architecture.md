@@ -59,7 +59,9 @@ concerns into the library.
 Built-in sources use ``OpenAPITransportKitCore/TransportSource`` values such as
 `.live`, `.fixtures`, `.replay`, `.dynamic`, and `.stateful`.
 ``OpenAPITransportKitCore/TransportSourceRegistry`` exposes named slots for those
-sources instead of a string-keyed public dictionary. Custom selection belongs in
+sources instead of a string-keyed public dictionary. Lookup is fail-closed: a
+missing slot surfaces ``OpenAPITransportKitCore/TransportSelectionError/missingTransport(_:)``
+instead of silently substituting another transport. Custom selection belongs in
 a user-provided ``OpenAPITransportKitCore/TransportSelector``.
 
 ## Middleware Layer
