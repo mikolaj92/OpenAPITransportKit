@@ -31,7 +31,8 @@ swift build -c release
 swift test -c release
 ```
 
-Also verify CI on macOS and Linux.
+This repository does not ship GitHub Actions workflows. Run the local commands
+above on macOS and Linux before tagging a release.
 
 Android SDK smoke builds are manual until Swift SDK artifact URLs and checksums
-are stable enough for unattended CI.
+are stable enough for unattended use.

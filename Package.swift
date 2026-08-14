@@ -2,6 +2,8 @@
 
 import PackageDescription
 
+// Path-dependency identity. Git URL consumers must use package: "OpenAPITransportKit"
+// (last path component of https://github.com/mikolaj92/OpenAPITransportKit.git).
 let package = Package(
     name: "swift-openapi-transport-kit",
     platforms: [

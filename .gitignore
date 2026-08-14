@@ -4,4 +4,7 @@ DerivedData/
 *.xcodeproj
 *.xcworkspace
 xcuserdata/
+.venv/
+.pytest_cache/
+__pycache__/
 
