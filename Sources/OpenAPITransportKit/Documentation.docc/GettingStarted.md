@@ -7,12 +7,18 @@ Create a generated OpenAPI client and replace only its transport.
 Use the umbrella product when starting:
 
 ```swift
-.package(url: "https://github.com/<owner>/swift-openapi-transport-kit.git", from: "0.1.0")
+.package(
+    url: "https://github.com/mikolaj92/OpenAPITransportKit.git",
+    branch: "main"
+)
 ```
 
 ```swift
-.product(name: "OpenAPITransportKit", package: "swift-openapi-transport-kit")
+.product(name: "OpenAPITransportKit", package: "OpenAPITransportKit")
 ```
+
+SwiftPM identifies a git dependency by the last path component of its URL
+(`OpenAPITransportKit`), not by the `name` in `Package.swift`.
 
 Use the split products later if a package wants a narrower dependency surface.
 

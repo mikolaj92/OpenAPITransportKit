@@ -35,9 +35,13 @@ package. It is not a runtime dependency of the library.
 ```swift
 .product(
     name: "OpenAPITransportKit",
-    package: "swift-openapi-transport-kit"
+    package: "OpenAPITransportKit"
 )
 ```
+
+SwiftPM identifies a git dependency by the last path component of its URL
+(`OpenAPITransportKit`), not by the `name` in `Package.swift`. Path
+dependencies still use that `name` (`swift-openapi-transport-kit`).
 
 Use the umbrella product first. Use split products later if a package needs a
 narrower dependency surface.

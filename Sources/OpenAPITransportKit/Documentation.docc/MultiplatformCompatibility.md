@@ -36,14 +36,10 @@ directly.
 
 This is not optional with Swift 6 import visibility.
 
-## GitHub Actions Note
+## Continuous Integration
 
-The workflow in this repository is a template, not the source of truth. Hosted
-GitHub runners may not have the exact Swift 6.3.2 toolchain or Android SDK
-setup needed by this package.
-
-Use local validation as the authoritative gate until CI runners are pinned and
-verified.
+This repository does not ship GitHub Actions workflows. Local validation is
+the authoritative gate.
 
 ```console
 swift test
