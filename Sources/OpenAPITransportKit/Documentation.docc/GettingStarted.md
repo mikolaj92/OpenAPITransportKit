@@ -9,7 +9,7 @@ Use the umbrella product when starting:
 ```swift
 .package(
     url: "https://github.com/mikolaj92/OpenAPITransportKit.git",
-    branch: "main"
+    from: "0.1.0"
 )
 ```
 

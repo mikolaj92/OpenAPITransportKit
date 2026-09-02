@@ -13,7 +13,7 @@ let package = Package(
         .visionOS(.v1),
     ],
     dependencies: [
-        .package(path: "../.."),
+        .package(name: "swift-openapi-transport-kit", path: "../.."),
         .package(url: "https://github.com/apple/swift-openapi-generator.git", from: "1.12.2"),
         .package(url: "https://github.com/apple/swift-openapi-runtime.git", from: "1.12.0"),
         .package(url: "https://github.com/apple/swift-http-types.git", from: "1.5.1"),
