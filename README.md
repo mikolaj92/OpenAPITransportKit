@@ -28,7 +28,7 @@ package. It is not a runtime dependency of the library.
 ```swift
 .package(
     url: "https://github.com/mikolaj92/OpenAPITransportKit.git",
-    branch: "main"
+    from: "0.1.0"
 )
 ```
 
