@@ -1,8 +1,14 @@
 # Release Policy
 
-This package uses SemVer.
+This package uses SemVer, including the `0.y.z` exception.
+
+Before `1.0.0`, source-breaking changes are allowed when they simplify the long-term API.
 
 ## Versioning
+
+Before `1.0.0`, a `0.y.z` minor bump may include source-breaking API changes.
+
+After `1.0.0`:
 
 - Patch: bug fixes and documentation changes.
 - Minor: additive API and new transport/provider modules.

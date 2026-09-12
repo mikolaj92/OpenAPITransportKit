@@ -251,5 +251,5 @@ required by the transport kit modules.
 
 ## Status
 
-Pre-1.0. API names can still change if that improves the long-term public
-surface.
+Pre-1.0. Before `1.0.0`, source-breaking changes are allowed when they
+simplify the long-term API.
