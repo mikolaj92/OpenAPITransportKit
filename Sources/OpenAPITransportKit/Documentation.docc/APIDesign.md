@@ -54,7 +54,7 @@ responses unless the user explicitly writes a provider that does that.
 
 ## SemVer Before 1.0
 
-Before `1.0.0`, source-breaking changes are allowed if they simplify the
+Before `1.0.0`, source-breaking changes are allowed when they simplify the
 long-term API.
 
 Before `1.0.0`, review these names carefully:
