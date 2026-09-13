@@ -239,12 +239,19 @@ The generated-client integration package runs `swift-openapi-generator` against
 
 ## Compatibility
 
-The package is designed for Swift Multiplatform:
+The `Package.swift` manifest declares these Apple deployment targets:
 
-- iOS
-- macOS
-- Linux
-- Android Swift SDK
+- iOS 13+
+- macOS 10.15+
+- Mac Catalyst 13+
+- tvOS 13+
+- watchOS 6+
+- visionOS 1+
+
+Linux and Android are also supported, but are not entries in SwiftPM's Apple
+`platforms` list. Android builds require a matching Swift SDK artifact bundle
+and checksum. See the [multiplatform compatibility guide](Sources/OpenAPITransportKit/Documentation.docc/MultiplatformCompatibility.md)
+for details.
 
 No SwiftUI, UIKit, AppKit, Vapor, TCA, or platform-specific runtime APIs are
 required by the transport kit modules.

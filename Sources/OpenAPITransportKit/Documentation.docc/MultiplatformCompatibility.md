@@ -18,15 +18,18 @@ application frameworks.
 
 ## Platforms
 
-Deployment targets follow `OpenAPIRuntime`:
+The Apple deployment targets declared in `Package.swift` are:
 
-- iOS
-- macOS
-- tvOS
-- watchOS
-- visionOS
-- Linux
-- Android through Swift SDKs
+- iOS 13+
+- macOS 10.15+
+- Mac Catalyst 13+
+- tvOS 13+
+- watchOS 6+
+- visionOS 1+
+
+Linux and Android are also supported, but they do not have deployment-target
+entries in SwiftPM's Apple `platforms` list. Android builds use Swift SDKs; see
+[Android](#android) below.
 
 ## HTTPTypes Dependency
 
