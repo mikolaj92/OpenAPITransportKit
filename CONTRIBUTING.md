@@ -22,7 +22,8 @@ Tests must use Swift Testing (`Testing`, `@Suite`, `@Test`, `#expect`,
 - Do not depend on UI frameworks or app architectures.
 - Do not introduce server frameworks.
 - Keep public APIs `Sendable`-safe.
-- Prefer protocol-based extension points over closed enums.
+- Prefer protocol-based extension points over closed enums, except for `TransportSource`.
+- Keep `TransportSource` a closed typed enum (`live`, `fixtures`, `replay`, `dynamic`, `stateful`). Do not add cases or a string-keyed registry; custom selection belongs in a user-provided `TransportSelector`.
 - Preserve generated-client behavior: request serialization, response deserialization, and status handling.
 
 ## Compatibility
