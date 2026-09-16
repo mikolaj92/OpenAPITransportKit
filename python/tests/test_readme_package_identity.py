@@ -16,6 +16,18 @@ GIT_URL = "https://github.com/mikolaj92/OpenAPITransportKit.git"
 WRONG_PACKAGE = 'package: "swift-openapi-transport-kit"'
 RIGHT_PACKAGE = 'package: "OpenAPITransportKit"'
 
+# SwiftPM's `from:` and `exact:` requirements take SemVer versions. Keep this
+# contract version-agnostic so a new release does not require a test change.
+_SEMVER_IDENTIFIER = (
+    r"(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)"
+)
+SEMVER_PATTERN = (
+    rf"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
+    rf"(?:-{_SEMVER_IDENTIFIER}(?:\.{_SEMVER_IDENTIFIER})*)?"
+    rf"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
+)
+PINNED_VERSION = re.compile(rf'(?:from|exact):\s*"{SEMVER_PATTERN}"')
+
 
 def _swift_fences(text: str) -> list[str]:
     return re.findall(r"```swift\n(.*?)```", text, flags=re.S)
@@ -44,13 +56,15 @@ def test_package_swift_keeps_path_dependency_name() -> None:
     assert 'name: "swift-openapi-transport-kit"' in manifest
 
 
-def test_git_install_is_pinned_to_first_release() -> None:
+def test_git_install_is_pinned_to_a_semver_release() -> None:
     for document in (README, GETTING_STARTED):
         text = document.read_text(encoding="utf-8")
         install_fences = [fence for fence in _swift_fences(text) if GIT_URL in fence]
         assert install_fences
         for fence in install_fences:
-            assert 'from: "0.1.0"' in fence
+            assert PINNED_VERSION.search(fence), (
+                "Git installs must use from: or exact: with a SemVer version"
+            )
             assert 'branch: "main"' not in fence
 
 
