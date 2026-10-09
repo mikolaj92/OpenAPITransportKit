@@ -11,10 +11,15 @@ swift test
 swift test --package-path IntegrationTests/GeneratedClient
 swift build -c release
 swift test -c release
+uv run --extra dev pytest
 ```
 
-Tests must use Swift Testing (`Testing`, `@Suite`, `@Test`, `#expect`,
+Swift tests must use Swift Testing (`Testing`, `@Suite`, `@Test`, `#expect`,
 `#require`) only.
+
+The pytest suite under `python/tests/` is part of this gate, not an optional
+script: it guards documentation contracts such as the package identity in
+`README.md`, `GettingStarted.md`, and `Package.swift`.
 
 ## API Rules
 
