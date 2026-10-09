@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
 README = ROOT / "README.md"
@@ -71,4 +72,20 @@ def test_git_install_is_pinned_to_a_semver_release() -> None:
 def test_mill_state_is_ignored_and_untracked() -> None:
     gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
     assert ".lokay/" in gitignore
-    assert not (ROOT / ".lokay").exists()
+    # The Lokay mill runs from a checkout and keeps state in `.lokay/`, so the
+    # directory may exist. The contract is that it stays gitignored and never
+    # tracked, not that it is absent.
+    ignored = subprocess.run(
+        ["git", "check-ignore", "-q", "--", ".lokay/"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    assert ignored.returncode == 0, ".lokay/ must be gitignored"
+    tracked = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "--", ".lokay"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    assert tracked.returncode != 0, ".lokay/ must not be tracked by git"
