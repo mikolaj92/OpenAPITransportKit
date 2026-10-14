@@ -13,8 +13,10 @@ swift build -c release
 swift test -c release
 ```
 
-Tests must use Swift Testing (`Testing`, `@Suite`, `@Test`, `#expect`,
+Swift tests must use Swift Testing (`Testing`, `@Suite`, `@Test`, `#expect`,
 `#require`) only.
+
+Documentation checks in `python/tests` use pytest.
 
 ## API Rules
 
