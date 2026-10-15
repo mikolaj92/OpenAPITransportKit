@@ -122,6 +122,7 @@ Use `headerFields` for repeated headers:
 let transport = DynamicTransport { context in
     TransportResponse(
         status: .ok,
+        headerFields: [.contentType: "application/json"],
         body: HTTPBody(#"{"ok":true}"#)
     )
 }
