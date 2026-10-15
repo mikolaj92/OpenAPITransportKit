@@ -35,6 +35,8 @@ swift test
 swift test --package-path IntegrationTests/GeneratedClient
 swift build -c release
 swift test -c release
+swift test -c release --package-path IntegrationTests/GeneratedClient
+uv run --extra dev pytest
 ```
 
 This repository does not ship GitHub Actions workflows. Run the local commands

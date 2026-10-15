@@ -1,13 +1,13 @@
 # Validation
 
-The package has two validation layers:
+The package has two Swift validation layers:
 
 - root package tests for the transport kit itself;
 - a separate generated-client integration package that uses
   `swift-openapi-generator`.
 
 Both layers use Swift Testing (`Testing`, `@Suite`, `@Test`, `#expect`,
-`#require`) only.
+`#require`) only. Documentation checks in `python/tests` use pytest.
 
 ## Generated Client Proof
 
@@ -33,11 +33,12 @@ The tests verify:
 ## Local Commands
 
 ```console
-swift package dump-package
 swift test
 swift test --package-path IntegrationTests/GeneratedClient
 swift build -c release
 swift test -c release
+swift test -c release --package-path IntegrationTests/GeneratedClient
+uv run --extra dev pytest
 ```
 
 ## What Is Not Proved Locally
