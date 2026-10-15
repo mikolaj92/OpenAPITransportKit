@@ -52,12 +52,16 @@ getDashboard.success.meta.json
 ```json
 {
   "status": 202,
-  "reasonPhrase": "Accepted",
   "headers": {
     "X-Fixture": "dashboard-success"
   }
 }
 ```
+
+An optional `reasonPhrase` is retained in the loaded status, subject to HTTPTypes
+character sanitization; omitting it produces an empty phrase. `HTTPResponse.Status`
+equality and hashing use only the status code. Encoding and decoding metadata can
+preserve the phrase without making it part of status identity.
 
 If metadata is missing, ``OpenAPITransportKitFixtures/FixtureResponseProvider`` uses
 ``OpenAPITransportKitFixtures/FixtureResponseDefaults``. The default is JSON `200 OK`.
