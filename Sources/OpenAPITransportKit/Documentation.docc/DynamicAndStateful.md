@@ -2,6 +2,8 @@
 
 Dynamic and stateful providers generate responses programmatically.
 
+Generated clients require `Content-Type: application/json` for JSON responses; `TransportResponse` defaults to empty headers, unlike the fixture default `.jsonOK`.
+
 ## Dynamic Responses
 
 Use ``OpenAPITransportKitDynamic/DynamicTransport`` for stateless response generation.
@@ -12,6 +14,7 @@ let transport = DynamicTransport { context in
     case "getDashboard":
         return TransportResponse(
             status: .ok,
+            headerFields: [.contentType: "application/json"],
             body: HTTPBody(#"{"items":[]}"#)
         )
     default:
@@ -42,6 +45,7 @@ let transport = StatefulTransport<AppState>(
         state: next,
         response: TransportResponse(
             status: .ok,
+            headerFields: [.contentType: "application/json"],
             body: HTTPBody(#"{"ok":true}"#)
         )
     )
