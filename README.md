@@ -220,7 +220,7 @@ Core extension points:
 
 ## Validation
 
-Tests use Swift Testing only.
+Swift tests use Swift Testing only. Documentation checks use pytest.
 
 ```console
 swift test
@@ -228,6 +228,7 @@ swift test --package-path IntegrationTests/GeneratedClient
 swift build -c release
 swift test -c release
 swift test -c release --package-path IntegrationTests/GeneratedClient
+uv run --extra dev pytest
 ```
 
 The generated-client integration package runs `swift-openapi-generator` against
