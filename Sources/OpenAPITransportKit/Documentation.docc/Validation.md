@@ -47,7 +47,6 @@ Local macOS tests do not prove:
 
 - Linux runner setup;
 - Android Swift SDK setup;
-- package index rendering;
-- GitHub-hosted Swift 6.3.2 availability.
+- package index rendering.
 
 These need separate platform checks.
