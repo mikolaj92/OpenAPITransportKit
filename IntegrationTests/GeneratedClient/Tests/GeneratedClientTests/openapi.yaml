@@ -6,6 +6,21 @@ servers:
   - url: https://example.com/api
 paths:
   /greet:
+    post:
+      operationId: postGreeting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Greeting'
+      responses:
+        '200':
+          description: Greeting response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Greeting'
     get:
       operationId: getGreeting
       parameters:
