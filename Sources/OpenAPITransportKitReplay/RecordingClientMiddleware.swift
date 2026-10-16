@@ -47,17 +47,7 @@ public struct RecordingClientMiddleware: ClientMiddleware {
             operationID: operationID
         )
 
-        let key: ReplayKey?
-        do {
-            key = try await keyStrategy.key(for: context)
-        } catch {
-            switch failureStrategy {
-            case .throw:
-                throw error
-            case .ignore:
-                key = nil
-            }
-        }
+        let key = try await recordingKey(for: context)
 
         let (response, responseBody) = try await next(request, bufferedRequestBody.makeBody(), baseURL)
         let bufferedResponseBody = try await BufferedBody(responseBody, maximumBytes: maximumResponseBodyBytes)
@@ -80,6 +70,19 @@ public struct RecordingClientMiddleware: ClientMiddleware {
         }
 
         return (response, bufferedResponseBody.makeBody())
+    }
+
+    private func recordingKey(for context: TransportRequestContext) async throws -> ReplayKey? {
+        do {
+            return try await keyStrategy.key(for: context)
+        } catch {
+            switch failureStrategy {
+            case .throw:
+                throw error
+            case .ignore:
+                return nil
+            }
+        }
     }
 }
 
