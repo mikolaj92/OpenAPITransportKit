@@ -89,7 +89,10 @@ getDashboard.empty.json
 getDashboard.error.json
 ```
 
-Fixture sidecar metadata:
+`MemoryFixtureLoader` returns a ready-made `FixturePayload`, with metadata supplied
+through `FixturePayload.metadata`. It does not read `.meta.json` files.
+`FileSystemFixtureLoader` and `BundleFixtureLoader` use `PayloadFixtureLoader` to
+read optional sidecar metadata files alongside the response body:
 
 ```text
 getDashboard.success.json
