@@ -205,7 +205,7 @@ Preferred user-facing transports:
 - `DynamicTransport`
 - `StatefulTransport`
 
-Core extension points:
+Selected core extension points; see the [DocC overview](Sources/OpenAPITransportKit/Documentation.docc/OpenAPITransportKit.md) for more public API types:
 
 - `ClientTransport`
 - `ResponseProvider`
