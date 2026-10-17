@@ -23,12 +23,16 @@ The build plugin generates client code during:
 swift test --package-path IntegrationTests/GeneratedClient
 ```
 
-The tests verify:
+The three tests cover the real generated `Client` only with `DynamicTransport`
+and `FixtureTransport`:
 
-- request serialization reaches the transport as `HTTPRequest`;
-- `operationID` is passed into the provider;
-- JSON responses deserialize into generated DTOs;
-- generated status handling works for success and error responses.
+- Dynamic GET verifies request serialization into `HTTPRequest` and passing
+  `operationID` to the response provider;
+- Fixture 200 verifies JSON deserialization into generated DTOs and success status handling;
+- Fixture 400 verifies JSON deserialization and error status handling.
+
+These tests do not establish generated-client integration for `ReplayTransport`,
+`StatefulTransport`, `RecordingClientMiddleware`, or `MultiplexingTransport`.
 
 ## Local Commands
 
