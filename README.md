@@ -205,18 +205,13 @@ Preferred user-facing transports:
 - `DynamicTransport`
 - `StatefulTransport`
 
-Core extension points:
+Extension points include `TransportSourceProvider`, `ReplayStoreWriter`, and
+`ReplayFileNameStrategy`. These are examples, not a complete API list. See
+[API Design in DocC](Sources/OpenAPITransportKit/Documentation.docc/APIDesign.md)
+for more on the API and extension points.
 
-- `ClientTransport`
-- `ResponseProvider`
-- `FixtureResolver`
-- `FixtureLoader`
-- `ScenarioProvider`
-- `ReplayStore`
-- `ReplayKeyStrategy`
-- `RequestFingerprinter`
-- `StatefulResponseHandler`
-- `TransportSelector`
+`RecordingClientMiddleware` is middleware for recording live responses, not an
+extension-point protocol.
 
 ## Validation
 
