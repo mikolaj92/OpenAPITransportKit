@@ -1,0 +1,19 @@
+name: Replay error contracts
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  replay-errors:
+    runs-on: ubuntu-latest
+    container: swift:6.3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run package tests
+        run: swift test
+      - name: Check replay error contracts
+        run: swift run ReplayErrorCheck
