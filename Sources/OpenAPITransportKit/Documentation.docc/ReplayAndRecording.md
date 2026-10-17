@@ -47,7 +47,11 @@ should buffer before using body-based fingerprints.
 let store = FileReplayStore(rootDirectory: replayDirectory)
 ```
 
-Records are JSON files. File names are derived from
+Records use JSON serialization defined by the `Codable` implementations of
+`ReplayRecord` and `HTTPTypes.HTTPResponse`, not an independent, stable file
+contract. File compatibility across dependency versions is not guaranteed.
+
+File names are derived from
 ``OpenAPITransportKitReplay/ReplayKey`` through a
 ``OpenAPITransportKitReplay/ReplayFileNameStrategy``.
 
