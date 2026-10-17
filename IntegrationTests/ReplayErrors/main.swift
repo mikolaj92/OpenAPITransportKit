@@ -7,7 +7,7 @@ import OpenAPITransportKitReplay
 enum CheckFailure: Error {
     case expectedInvalidRecord(String)
     case expectedInvalidFingerprintHeaderName
-    case unexpectedFixtureHeaders
+    case unexpectedFixturePayload
     case expectedInvalidFixtureHeaderName
 }
 
@@ -51,29 +51,34 @@ func checkFixtureSidecar() async throws {
 
     let reference = FixtureReference(rawValue: "response.json")
     let sidecar = directory.appendingPathComponent("response.meta.json")
-    try Data(#"{"message":"hello"}"#.utf8)
-        .write(to: directory.appendingPathComponent(reference.rawValue), options: .atomic)
+    let response = Data(#"{"message":"hello"}"#.utf8)
+    try response.write(to: directory.appendingPathComponent(reference.rawValue), options: .atomic)
     try Data(#"{"headers":{"Content-Type":"application/json"},"headerFields":[{"name":"Set-Cookie","value":"a=1"},{"name":"Set-Cookie","value":"b=2"}]}"#.utf8)
         .write(to: sidecar, options: .atomic)
 
     let loader = FileSystemFixtureLoader(rootDirectory: directory)
     let payload = try await loader.load(reference)
-    guard let headers = payload.metadata?.headerFields,
+    guard payload.data == response,
+        let headers = payload.metadata?.headerFields,
         headers[.contentType] == "application/json",
         headers.filter({ $0.name == .setCookie }).map(\.value) == ["a=1", "b=2"]
     else {
-        throw CheckFailure.unexpectedFixtureHeaders
+        throw CheckFailure.unexpectedFixturePayload
     }
 
-    try Data(#"{"headerFields":[{"name":"Bad Header","value":"invalid"}]}"#.utf8)
-        .write(to: sidecar, options: .atomic)
-    do {
-        _ = try await loader.load(reference)
-        throw CheckFailure.expectedInvalidFixtureHeaderName
-    } catch FixtureError.invalidHeaderName(let name) where name == "Bad Header" {
+    for content in [
+        #"{"headers":{"Bad Header":"invalid"}}"#,
+        #"{"headerFields":[{"name":"Bad Header","value":"invalid"}]}"#,
+    ] {
+        try Data(content.utf8).write(to: sidecar, options: .atomic)
+        do {
+            _ = try await loader.load(reference)
+            throw CheckFailure.expectedInvalidFixtureHeaderName
+        } catch FixtureError.invalidHeaderName(let name) where name == "Bad Header" {
+        }
     }
 }
 
 try await checkReplayErrors()
 try await checkFixtureSidecar()
-print("Replay and fixture checks passed (5 cases).")
+print("Replay and fixture checks passed (6 cases).")
