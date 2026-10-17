@@ -232,12 +232,17 @@ uv run --extra dev pytest
 ```
 
 The generated-client integration package runs `swift-openapi-generator` against
-`openapi.yaml` and verifies the real generated `Client` pipeline:
+`openapi.yaml`. Its three tests cover the real generated `Client` only with
+`DynamicTransport` and `FixtureTransport`:
 
-- request serialization reaches the transport as `HTTPRequest`;
-- `operationID` reaches the response provider;
-- JSON responses deserialize into generated DTOs;
-- generated status-code handling works for success and error responses.
+- Dynamic GET verifies the GET method, `/greet` path, `name=Blob` query parameter,
+  `operationID`, and JSON response deserialization;
+- Fixture 200 verifies JSON deserialization into generated DTOs and success status handling;
+- Fixture 400 verifies JSON deserialization and error status handling.
+
+These tests do not establish generated-client integration for `ReplayTransport`,
+`StatefulTransport`, `RecordingClientMiddleware`, or `MultiplexingTransport`;
+this does not imply those components are broken.
 
 ## Compatibility
 
