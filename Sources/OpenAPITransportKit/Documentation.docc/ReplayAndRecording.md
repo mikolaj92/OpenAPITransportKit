@@ -49,7 +49,7 @@ let store = FileReplayStore(rootDirectory: replayDirectory)
 
 Records use JSON serialization defined by the `Codable` implementations of
 `ReplayRecord` and `HTTPTypes.HTTPResponse`, not an independent, stable file
-contract. File compatibility across dependency versions is not guaranteed.
+contract. File compatibility across library or dependency versions is not guaranteed.
 
 File names are derived from
 ``OpenAPITransportKitReplay/ReplayKey`` through a
