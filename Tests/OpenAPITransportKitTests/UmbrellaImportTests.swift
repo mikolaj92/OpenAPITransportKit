@@ -6,7 +6,7 @@ import Testing
 struct UmbrellaImportTests {
 
     @Test
-    func testUmbrellaModuleReexportsPublicModules() async throws {
+    func testDynamicTransportIsAvailableThroughUmbrellaImport() async throws {
         let transport = DynamicTransport { _ in
             TransportResponse(status: .ok)
         }
