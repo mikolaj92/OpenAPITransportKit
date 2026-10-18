@@ -111,11 +111,10 @@ let recorder = RecordingClientMiddleware(
 
 ## Failure Strategy
 
-`.ignore` suppresses key-strategy and writer errors. A key-strategy error skips
-writing but still forwards the buffered request body to `next` and returns the
-buffered live response.
+`.ignore` suppresses key-strategy and writer errors. After a key-strategy error,
+it skips writing, forwards the full buffered request to `next`, and returns the
+buffered live response if `next` and response buffering succeed.
 
-`.throw` propagates key-strategy errors before calling `next`, and writer errors
-after buffering the live response.
-
-Errors from `next` or request/response body buffering always propagate.
+`.throw` propagates key-strategy errors before `next`, or writer errors after
+buffering the live response. Errors from `next` and request/response body
+buffering propagate with either strategy.

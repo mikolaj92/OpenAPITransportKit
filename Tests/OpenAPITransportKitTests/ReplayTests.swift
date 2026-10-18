@@ -319,9 +319,8 @@ struct ReplayTests {
       #expect(detail == "test writer failure")
     }
 
-    let writer = CountingReplayWriter()
     let keyFailureMiddleware = RecordingClientMiddleware(
-      writer: writer,
+      writer: UnexpectedReplayWriter(),
       keyStrategy: ClosureReplayKeyStrategy { context in
         let requestText = try await String(collecting: #require(context.body), upTo: 1024)
         #expect(requestText == "request-body")
@@ -345,7 +344,6 @@ struct ReplayTests {
     } catch let error as RecordingTestError {
       #expect(error == .keyFailure)
     }
-    #expect(await writer.callCount == 0)
   }
 
   @Test
@@ -371,10 +369,12 @@ struct ReplayTests {
     #expect(bodyText == "live-response")
 
     for nextFails in [false, true] {
-      let writer = CountingReplayWriter()
       let keyFailureMiddleware = RecordingClientMiddleware(
-        writer: writer,
+        writer: UnexpectedReplayWriter(),
         keyStrategy: ClosureReplayKeyStrategy { context in
+          #expect(context.request == dashboardRequest())
+          #expect(context.baseURL == baseURL())
+          #expect(context.operationID == expectedKey.operationID)
           let requestText = try await String(collecting: #require(context.body), upTo: 1024)
           #expect(requestText == "request-body")
           throw RecordingTestError.keyFailure
@@ -388,7 +388,9 @@ struct ReplayTests {
           body: HTTPBody("request-body"),
           baseURL: baseURL(),
           operationID: expectedKey.operationID,
-          next: { _, body, _ in
+          next: { request, body, url in
+            #expect(request == dashboardRequest())
+            #expect(url == baseURL())
             let requestText = try await String(collecting: #require(body), upTo: 1024)
             #expect(requestText == "request-body")
             if nextFails {
@@ -405,7 +407,6 @@ struct ReplayTests {
         #expect(nextFails)
         #expect(error == .nextFailure)
       }
-      #expect(await writer.callCount == 0)
     }
   }
 
@@ -416,10 +417,8 @@ private enum RecordingTestError: Error {
   case nextFailure
 }
 
-private actor CountingReplayWriter: ReplayStoreWriter {
-  private(set) var callCount = 0
-
+private struct UnexpectedReplayWriter: ReplayStoreWriter {
   func write(_ record: ReplayRecord, for key: ReplayKey) async throws {
-    callCount += 1
+    Issue.record("Unexpected writer call after key failure.")
   }
 }
