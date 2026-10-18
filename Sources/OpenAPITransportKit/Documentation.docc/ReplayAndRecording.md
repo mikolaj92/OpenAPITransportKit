@@ -43,9 +43,9 @@ should buffer before using body-based fingerprints.
 
 ## File Replay Store
 
-JSON uses `ReplayRecord.Codable` and `HTTPTypes.HTTPResponse.Codable`, without an independent, versioned schema or guaranteed cross-version compatibility.
-Writes are atomic. Reads return `nil` only for missing files.
-Read or decoding failures throw `ReplayError.invalidRecord(_:_:)` with the requested key.
+JSON uses `ReplayRecord.Codable`, including HTTPTypes' `HTTPResponse` encoding.
+Writes are atomic; missing files return `nil`, while read or decoding failures
+throw `ReplayError.invalidRecord(_:_:)` with the requested key.
 
 File names are derived from
 ``OpenAPITransportKitReplay/ReplayKey`` through a
@@ -69,8 +69,8 @@ let client = Client(
 )
 ```
 
-Missing records throw `ReplayError.missingRecord(_:)`. They do not synthesize
-HTTP responses.
+The transport turns a store's `nil` into `ReplayError.missingRecord(_:)`,
+not an HTTP response.
 
 ## Recording Middleware
 
@@ -86,8 +86,6 @@ let client = Client(
     middlewares: [recorder]
 )
 ```
-
-Recording is middleware because it observes the live transport response.
 
 ## Body Buffering
 
