@@ -89,13 +89,12 @@ getDashboard.empty.json
 getDashboard.error.json
 ```
 
-`MemoryFixtureLoader` returns the stored `FixturePayload` unchanged. Set its metadata
-programmatically through `FixturePayload.metadata`; it does not read `.meta.json` files.
+`MemoryFixtureLoader` returns a `FixturePayload` from its dictionary unchanged.
+Supply metadata through `FixturePayload.metadata`, not sidecars or separate `.meta.json` entries.
 
 `FileSystemFixtureLoader` and `BundleFixtureLoader` use `PayloadFixtureLoader` to
-read optional `.meta.json` sidecar files alongside the response body. See the
-[Fixtures guide](Sources/OpenAPITransportKit/Documentation.docc/Fixtures.md)
-for the sidecar format and file system and bundle loader examples.
+read optional `.meta.json` sidecars alongside the response body. See
+[Metadata Sidecars](Sources/OpenAPITransportKit/Documentation.docc/Fixtures.md#metadata-sidecars).
 
 ### Dynamic
 
