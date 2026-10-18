@@ -43,13 +43,11 @@ should buffer before using body-based fingerprints.
 
 ## File Replay Store
 
-```swift
-let store = FileReplayStore(rootDirectory: replayDirectory)
-```
-
-Records use JSON serialization defined by the `Codable` implementations of
-`ReplayRecord` and `HTTPTypes.HTTPResponse`, not an independent, stable file
-contract. File compatibility across library or dependency versions is not guaranteed.
+Records use JSON through `ReplayRecord.Codable`; response encoding depends on
+`HTTPTypes.HTTPResponse.Codable`, not an independent, versioned schema.
+File compatibility across library or dependency versions is not guaranteed.
+Writes are atomic. Reads return `nil` only for missing files; read or decoding
+failures throw `ReplayError.invalidRecord(_:_:)` with the requested key.
 
 File names are derived from
 ``OpenAPITransportKitReplay/ReplayKey`` through a
