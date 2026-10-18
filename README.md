@@ -227,12 +227,11 @@ uv run --extra dev pytest
 ```
 
 The generated-client integration package runs `swift-openapi-generator` against
-`openapi.yaml` and verifies the real generated `Client` pipeline:
-
-- request serialization reaches the transport as `HTTPRequest`;
-- `operationID` reaches the response provider;
-- JSON responses deserialize into generated DTOs;
-- generated status-code handling works for success and error responses.
+`openapi.yaml`. Its three tests use the real generated `Client`: Dynamic GET
+checks request serialization (method, path, query), `operationID`, and JSON
+response deserialization; Fixture 200 and 400 check generated DTOs and success
+and error status handling. They do not cover generated-client integration for
+Replay, Stateful, Recording, or Multiplexing.
 
 ## Compatibility
 
