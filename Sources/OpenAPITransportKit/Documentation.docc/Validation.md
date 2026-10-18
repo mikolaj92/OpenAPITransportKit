@@ -11,29 +11,12 @@ Both layers use Swift Testing (`Testing`, `@Suite`, `@Test`, `#expect`,
 
 ## Generated Client Proof
 
-`IntegrationTests/GeneratedClient` contains:
-
-- `openapi.yaml`
-- `openapi-generator-config.yaml`
-- tests using the real generated `Client`
-
-The build plugin generates client code during:
-
-```console
-swift test --package-path IntegrationTests/GeneratedClient
-```
-
-The three tests cover the real generated `Client` only with `DynamicTransport`
-and `FixtureTransport`:
-
-- Dynamic GET verifies the GET method, `/greet` path, `name=Blob` query parameter,
-  `operationID`, and JSON response deserialization;
-- Fixture 200 verifies JSON deserialization into generated DTOs and success status handling;
-- Fixture 400 verifies JSON deserialization and error status handling.
-
-These tests do not establish generated-client integration for `ReplayTransport`,
-`StatefulTransport`, `RecordingClientMiddleware`, or `MultiplexingTransport`;
-this does not imply those components are broken.
+The build plugin in `IntegrationTests/GeneratedClient` generates the real
+`Client` from `openapi.yaml`. Three tests use that client: Dynamic GET checks
+request serialization (method, path, query), `operationID`, and JSON response
+deserialization; Fixture 200 and 400 check generated DTOs and success and error
+status handling. They do not cover generated-client integration for Replay,
+Stateful, Recording, or Multiplexing.
 
 ## Local Commands
 
