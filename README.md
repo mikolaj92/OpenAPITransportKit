@@ -205,18 +205,13 @@ Preferred user-facing transports:
 - `DynamicTransport`
 - `StatefulTransport`
 
-Core extension points:
+Extension points include `TransportSourceProvider`, `ReplayStoreWriter`, and
+`ReplayFileNameStrategy`. These are examples, not a complete API list. See
+[API Design in DocC](Sources/OpenAPITransportKit/Documentation.docc/APIDesign.md)
+for more on the API and extension points.
 
-- `ClientTransport`
-- `ResponseProvider`
-- `FixtureResolver`
-- `FixtureLoader`
-- `ScenarioProvider`
-- `ReplayStore`
-- `ReplayKeyStrategy`
-- `RequestFingerprinter`
-- `StatefulResponseHandler`
-- `TransportSelector`
+`RecordingClientMiddleware` is middleware for recording live responses, not an
+extension-point protocol.
 
 ## Validation
 
@@ -232,12 +227,11 @@ uv run --extra dev pytest
 ```
 
 The generated-client integration package runs `swift-openapi-generator` against
-`openapi.yaml` and verifies the real generated `Client` pipeline:
-
-- request serialization reaches the transport as `HTTPRequest`;
-- `operationID` reaches the response provider;
-- JSON responses deserialize into generated DTOs;
-- generated status-code handling works for success and error responses.
+`openapi.yaml`. Its three tests use the real generated `Client`: Dynamic GET
+checks request serialization (method, path, query), `operationID`, and JSON
+response deserialization; Fixture 200 and 400 check generated DTOs and success
+and error status handling. They do not cover generated-client integration for
+Replay, Stateful, Recording, or Multiplexing.
 
 ## Compatibility
 
