@@ -33,12 +33,23 @@ struct ReplayTests {
 
   @Test
   func testFileReplayStoreWritesAndReadsRecordedResponse() async throws {
-    let directory = temporaryDirectory()
+    let directory = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .appendingPathComponent("replay-\(UUID().uuidString)", isDirectory: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
     let store = FileReplayStore(rootDirectory: directory)
     let key = ReplayKey(
       operationID: "getDashboard", requestFingerprint: "abc123", scenario: "success")
+    let missing = try await store.record(for: key)
+    #expect(missing == nil)
+    let headers: HTTPFields = [
+      .contentType: "text/plain",
+      .setCookie: "session=first; Path=/",
+      .setCookie: "theme=second; Path=/",
+    ]
     let record = ReplayRecord(
-      response: HTTPResponse(status: .created),
+      response: HTTPResponse(
+        status: .init(code: 201, reasonPhrase: "Stored response"), headerFields: headers),
       body: Data("stored".utf8),
       recordedAt: Date(timeIntervalSince1970: 1_700_000_000)
     )
@@ -50,6 +61,54 @@ struct ReplayTests {
     #expect(loaded.response.status == .created)
     #expect(loaded.body == Data("stored".utf8))
     #expect(loaded.recordedAt == Date(timeIntervalSince1970: 1_700_000_000))
+    #expect(loaded.response.status.reasonPhrase == "Stored response")
+    #expect(Array(loaded.response.headerFields) == Array(headers))
+    #expect(loaded.response.headerFields[.contentType] == "text/plain")
+    #expect(loaded.response.headerFields[values: .setCookie] == [
+      "session=first; Path=/", "theme=second; Path=/",
+    ])
+
+    let literalKey = ReplayKey(operationID: "literal")
+    let json = """
+      {
+        "response": {
+          "pseudoHeaderFields": [{"name": ":status", "value": "201"}],
+          "reasonPhrase": "Literal response",
+          "headerFields": [
+            {"name": "Content-Type", "value": "text/plain"},
+            {"name": "Set-Cookie", "value": "session=first; Path=/"},
+            {"name": "Set-Cookie", "value": "theme=second; Path=/"}
+          ]
+        },
+        "body": "c3RvcmVk",
+        "recordedAt": 721692800
+      }
+      """
+    try Data(json.utf8).write(to: store.url(for: literalKey))
+    let optionalLiteral = try await store.record(for: literalKey)
+    let literal = try #require(optionalLiteral)
+    #expect(literal.response.status == .created)
+    #expect(literal.response.status.reasonPhrase == "Literal response")
+    #expect(Array(literal.response.headerFields) == Array(headers))
+    #expect(literal.response.headerFields[.contentType] == "text/plain")
+    #expect(literal.response.headerFields[values: .setCookie] == [
+      "session=first; Path=/", "theme=second; Path=/",
+    ])
+    #expect(literal.body == Data("stored".utf8))
+    #expect(literal.recordedAt == Date(timeIntervalSince1970: 1_700_000_000))
+
+    for (invalidKey, contents) in [
+      (key, "{broken"),
+      (ReplayKey(operationID: "invalidStructure"), "{}"),
+    ] {
+      try Data(contents.utf8).write(to: store.url(for: invalidKey))
+      do {
+        _ = try await store.record(for: invalidKey)
+        Issue.record("Expected invalid replay record for \(invalidKey).")
+      } catch ReplayError.invalidRecord(let actualKey, _) {
+        #expect(actualKey == invalidKey)
+      }
+    }
   }
 
   @Test
