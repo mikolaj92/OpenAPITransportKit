@@ -43,11 +43,9 @@ should buffer before using body-based fingerprints.
 
 ## File Replay Store
 
-Records use JSON through `ReplayRecord.Codable`; response encoding depends on
-`HTTPTypes.HTTPResponse.Codable`, not an independent, versioned schema.
-File compatibility across library or dependency versions is not guaranteed.
-Writes are atomic. Reads return `nil` only for missing files; read or decoding
-failures throw `ReplayError.invalidRecord(_:_:)` with the requested key.
+JSON uses `ReplayRecord.Codable` and `HTTPTypes.HTTPResponse.Codable`, without an independent, versioned schema or guaranteed cross-version compatibility.
+Writes are atomic. Reads return `nil` only for missing files.
+Read or decoding failures throw `ReplayError.invalidRecord(_:_:)` with the requested key.
 
 File names are derived from
 ``OpenAPITransportKitReplay/ReplayKey`` through a
