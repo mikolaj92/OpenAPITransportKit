@@ -68,7 +68,6 @@ struct ReplayTests {
       "session=first; Path=/", "theme=second; Path=/",
     ])
 
-    // Literal HTTPTypes 1.5.1 JSON; Date uses seconds since 2001-01-01.
     let literalKey = ReplayKey(operationID: "literal")
     let json = """
       {
