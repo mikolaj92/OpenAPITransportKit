@@ -69,18 +69,14 @@ public struct FileReplayStore: ReplayStore, ReplayStoreWriter {
 
     public func record(for key: ReplayKey) async throws -> ReplayRecord? {
         let url = url(for: key)
-        let data: Data
-        do {
-            data = try await Task.detached {
-                try Data(contentsOf: url)
-            }.value
-        } catch CocoaError.fileReadNoSuchFile {
+        guard FileManager.default.fileExists(atPath: url.path) else {
             return nil
-        } catch {
-            throw ReplayError.invalidRecord(key, String(describing: error))
         }
 
         do {
+            let data = try await Task.detached {
+                try Data(contentsOf: url)
+            }.value
             return try JSONDecoder().decode(ReplayRecord.self, from: data)
         } catch {
             throw ReplayError.invalidRecord(key, String(describing: error))
