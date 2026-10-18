@@ -75,6 +75,7 @@ let package = Package(
             name: "ReplayErrorCheck",
             dependencies: [
                 "OpenAPITransportKitCore",
+                "OpenAPITransportKitFixtures",
                 "OpenAPITransportKitReplay",
                 .product(name: "HTTPTypes", package: "swift-http-types"),
             ],
