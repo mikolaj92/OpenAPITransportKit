@@ -297,50 +297,48 @@ struct ReplayTests {
 
   @Test
   func testRecordingFailureStrategyThrowPropagatesWriterFailure() async throws {
-    let expectedKey = ReplayKey(operationID: "getDashboard")
-    let middleware = RecordingClientMiddleware(
-      writer: FailingReplayWriter(key: expectedKey),
-      failureStrategy: .throw
-    )
-
-    do {
-      _ = try await middleware.intercept(
-        dashboardRequest(),
-        body: nil,
-        baseURL: baseURL(),
-        operationID: expectedKey.operationID,
-        next: { _, _, _ in
-          (HTTPResponse(status: .accepted), HTTPBody("live-response"))
+    enum KeyFailure: Error { case expected }; let expectedKey = ReplayKey(operationID: "getDashboard")
+    for failsKey in [false, true] {
+      let strategy = ClosureReplayKeyStrategy { context in
+        #expect(try await String(collecting: #require(context.body), upTo: 1024) == "request-body")
+        if failsKey { throw KeyFailure.expected }; return expectedKey
+      }
+      let middleware = RecordingClientMiddleware(writer: failsKey ? UnexpectedReplayWriter() : FailingReplayWriter(key: expectedKey), keyStrategy: strategy, failureStrategy: .throw)
+      do {
+        _ = try await middleware.intercept(dashboardRequest(), body: HTTPBody("request-body"), baseURL: baseURL(), operationID: expectedKey.operationID) { _, _, _ in
+          if failsKey { Issue.record("Expected key failure to prevent calling next.") }
+          return (HTTPResponse(status: .accepted), HTTPBody("live-response"))
         }
-      )
-      Issue.record("Expected writer failure.")
-    } catch ReplayError.cannotWriteRecord(let key, let detail) {
-      #expect(key == expectedKey)
-      #expect(detail == "test writer failure")
+        Issue.record("Expected recording failure.")
+      } catch ReplayError.cannotWriteRecord(let key, let detail) { #expect(!failsKey && key == expectedKey && detail == "test writer failure")
+      } catch { #expect(failsKey && error as? KeyFailure == .expected) }
     }
   }
 
   @Test
   func testRecordingFailureStrategyIgnoreReturnsBufferedLiveResponse() async throws {
-    let expectedKey = ReplayKey(operationID: "getDashboard")
-    let middleware = RecordingClientMiddleware(
-      writer: FailingReplayWriter(key: expectedKey),
-      failureStrategy: .ignore
-    )
-
-    let (response, body) = try await middleware.intercept(
-      dashboardRequest(),
-      body: nil,
-      baseURL: baseURL(),
-      operationID: expectedKey.operationID,
-      next: { _, _, _ in
-        (HTTPResponse(status: .accepted), HTTPBody("live-response"))
+    enum Failure: Error { case key, next }; let expectedKey = ReplayKey(operationID: "getDashboard")
+    for (failsKey, failsNext) in [(false, false), (true, false), (true, true)] {
+      let strategy = ClosureReplayKeyStrategy { context in
+        #expect(context.operationID == expectedKey.operationID)
+        #expect(try await String(collecting: #require(context.body), upTo: 1024) == "request-body")
+        if failsKey { throw Failure.key }; return expectedKey
       }
-    )
-
-    #expect(response.status == .accepted)
-    let bodyText = try await String(collecting: #require(body), upTo: 1024)
-    #expect(bodyText == "live-response")
+      let middleware = RecordingClientMiddleware(writer: failsKey ? UnexpectedReplayWriter() : FailingReplayWriter(key: expectedKey), keyStrategy: strategy, failureStrategy: .ignore)
+      do {
+        let (response, body) = try await middleware.intercept(dashboardRequest(), body: HTTPBody("request-body"), baseURL: baseURL(), operationID: expectedKey.operationID) { request, body, url in
+          #expect(request == dashboardRequest() && url == baseURL())
+          #expect(try await String(collecting: #require(body), upTo: 1024) == "request-body")
+          if failsNext { throw Failure.next }
+          return (HTTPResponse(status: .accepted), HTTPBody("live-response"))
+        }
+        if failsNext { Issue.record("Expected next failure after ignored key failure.") }
+        #expect(response.status == .accepted); #expect(try await String(collecting: #require(body), upTo: 1024) == "live-response")
+      } catch { #expect(failsNext && error as? Failure == .next) }
+    }
   }
+
+  private struct UnexpectedReplayWriter: ReplayStoreWriter {
+    func write(_ record: ReplayRecord, for key: ReplayKey) async throws { Issue.record("Expected key failure to prevent writing a replay record.") } }
 
 }
