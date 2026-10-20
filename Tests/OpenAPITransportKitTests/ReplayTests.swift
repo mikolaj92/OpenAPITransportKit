@@ -318,6 +318,33 @@ struct ReplayTests {
       #expect(key == expectedKey)
       #expect(detail == "test writer failure")
     }
+
+    enum KeyFailure: Error { case expected }
+    let keyFailureMiddleware = RecordingClientMiddleware(
+      writer: UnexpectedReplayWriter(),
+      keyStrategy: ClosureReplayKeyStrategy { context in
+        let bodyText = try await String(collecting: #require(context.body), upTo: 1024)
+        #expect(bodyText == "request-body")
+        throw KeyFailure.expected
+      },
+      failureStrategy: .throw
+    )
+
+    do {
+      _ = try await keyFailureMiddleware.intercept(
+        dashboardRequest(),
+        body: HTTPBody("request-body"),
+        baseURL: baseURL(),
+        operationID: expectedKey.operationID,
+        next: { _, _, _ in
+          Issue.record("Expected key failure to prevent calling next.")
+          return (HTTPResponse(status: .accepted), HTTPBody("live-response"))
+        }
+      )
+      Issue.record("Expected key failure.")
+    } catch {
+      #expect(error as? KeyFailure == .expected)
+    }
   }
 
   @Test
@@ -341,6 +368,65 @@ struct ReplayTests {
     #expect(response.status == .accepted)
     let bodyText = try await String(collecting: #require(body), upTo: 1024)
     #expect(bodyText == "live-response")
+
+    enum Failure: Error { case key, next }
+    let request = dashboardRequest()
+    let url = baseURL()
+    let keyFailureMiddleware = RecordingClientMiddleware(
+      writer: UnexpectedReplayWriter(),
+      keyStrategy: ClosureReplayKeyStrategy { context in
+        #expect(context.request == request)
+        #expect(context.baseURL == url)
+        #expect(context.operationID == expectedKey.operationID)
+        let bodyText = try await String(collecting: #require(context.body), upTo: 1024)
+        #expect(bodyText == "request-body")
+        throw Failure.key
+      },
+      failureStrategy: .ignore
+    )
+
+    let (liveResponse, liveBody) = try await keyFailureMiddleware.intercept(
+      request,
+      body: HTTPBody("request-body"),
+      baseURL: url,
+      operationID: expectedKey.operationID,
+      next: { actualRequest, actualBody, actualURL in
+        #expect(actualRequest == request)
+        #expect(actualURL == url)
+        let requestText = try await String(collecting: #require(actualBody), upTo: 1024)
+        #expect(requestText == "request-body")
+        return (HTTPResponse(status: .accepted), HTTPBody("live-response"))
+      }
+    )
+
+    #expect(liveResponse.status == .accepted)
+    let liveBodyText = try await String(collecting: #require(liveBody), upTo: 1024)
+    #expect(liveBodyText == "live-response")
+
+    do {
+      _ = try await keyFailureMiddleware.intercept(
+        request,
+        body: HTTPBody("request-body"),
+        baseURL: url,
+        operationID: expectedKey.operationID,
+        next: { actualRequest, actualBody, actualURL in
+          #expect(actualRequest == request)
+          #expect(actualURL == url)
+          let requestText = try await String(collecting: #require(actualBody), upTo: 1024)
+          #expect(requestText == "request-body")
+          throw Failure.next
+        }
+      )
+      Issue.record("Expected next failure after ignored key failure.")
+    } catch {
+      #expect(error as? Failure == .next)
+    }
+  }
+
+  private struct UnexpectedReplayWriter: ReplayStoreWriter {
+    func write(_ record: ReplayRecord, for key: ReplayKey) async throws {
+      Issue.record("Expected key failure to prevent writing a replay record.")
+    }
   }
 
 }
