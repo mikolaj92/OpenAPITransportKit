@@ -89,12 +89,32 @@ getDashboard.empty.json
 getDashboard.error.json
 ```
 
-`MemoryFixtureLoader` returns a `FixturePayload` from its dictionary unchanged.
-Supply metadata through `FixturePayload.metadata`, not sidecars or separate `.meta.json` entries.
+Fixture sidecar metadata:
 
-`FileSystemFixtureLoader` and `BundleFixtureLoader` use `PayloadFixtureLoader` to
-read optional `.meta.json` sidecars alongside the response body. See
-[Metadata Sidecars](Sources/OpenAPITransportKit/Documentation.docc/Fixtures.md#metadata-sidecars).
+```text
+getDashboard.success.json
+getDashboard.success.meta.json
+```
+
+```json
+{
+  "status": 202,
+  "headers": {
+    "Content-Type": "application/json"
+  }
+}
+```
+
+Use `headerFields` for repeated headers:
+
+```json
+{
+  "headerFields": [
+    { "name": "Set-Cookie", "value": "a=1" },
+    { "name": "Set-Cookie", "value": "b=2" }
+  ]
+}
+```
 
 ### Dynamic
 
