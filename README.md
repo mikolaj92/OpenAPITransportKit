@@ -80,16 +80,15 @@ let client = Client(
 
 Fixture lookup is based on OpenAPI `operationId`, not URL.
 
-Default fixture names:
+`MemoryFixtureLoader` returns stored payloads unchanged. Set
+`FixturePayload.metadata` programmatically; it does not read sidecars.
 
-```text
-<operationId>.<scenario>.json
-getDashboard.success.json
-getDashboard.empty.json
-getDashboard.error.json
+`FileSystemFixtureLoader` and `BundleFixtureLoader` use `PayloadFixtureLoader`
+to read body files and optional metadata sidecars stored together:
+
+```swift
+let loader = FileSystemFixtureLoader(rootDirectory: fixturesDirectory)
 ```
-
-Fixture sidecar metadata:
 
 ```text
 getDashboard.success.json
